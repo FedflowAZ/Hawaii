@@ -1,0 +1,2052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hawai&#699;i Petroleum Flow &middot; one mooring, one refinery, four islands</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Archivo:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#f2ede1;
+    --ink-dim:#a7b2bd;
+    --ink-faint:#6b7a87;
+    --sea-0:#06121f;
+    --sea-1:#0a1d2e;
+    --panel:#0e2334;
+    --panel-2:#102b3f;
+    --line:#1d3a4f;
+    --amber:#f5b301;
+    --amber-soft:#f6c34a;
+    --crude:#378add;
+    --refine:#e879f9;
+    --product:#f59e0b;
+    --power:#b91c1c;
+    --bunker:#0d9488;
+    --jet:#a78bfa;
+    --kauai:#3b82f6;
+    --maui:#f59e0b;
+    --hawaii:#22c55e;
+    --oahu:#ef4444;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#07080d;
+    color:var(--ink);font-family:"Archivo",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1180px;margin:0 auto;padding:26px 20px 18px;}
+  header.masthead{display:flex;align-items:flex-end;justify-content:space-between;
+    gap:24px;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:8px;flex-wrap:wrap}
+  .title-block h1{font-family:"Fraunces",serif;font-weight:600;font-size:clamp(19px,2.5vw,29px);
+    line-height:1.04;margin:0;letter-spacing:-0.005em}
+  .title-block h1 .em{font-style:italic;font-weight:500;color:var(--amber-soft)}
+  .kicker{font-family:"Spline Sans Mono",monospace;font-size:11px;letter-spacing:0.28em;
+    text-transform:uppercase;color:var(--amber);margin:0 0 8px}
+  .deck{color:var(--ink-dim);font-size:14px;max-width:840px;margin:10px 0 0;line-height:1.5}
+  .yearchip{font-family:"Fraunces",serif;font-size:28px;line-height:1;color:var(--ink);
+    text-align:right}
+  .yearchip span{display:block;font-family:"Spline Sans Mono",monospace;font-size:9px;
+    letter-spacing:0.24em;color:var(--ink-faint);text-transform:uppercase;margin-top:4px}
+
+  .controls{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin:18px 0 14px}
+  #sim-controls{row-gap:10px;margin:12px 0 6px}
+  .btn{font-family:"Spline Sans Mono",monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;
+    background:transparent;color:#5d6b7a;border:1px solid #1e2535;
+    padding:6px 14px;border-radius:4px;cursor:pointer;transition:.15s;white-space:nowrap}
+  .btn:hover{color:#cdd6e0;border-color:#3a5070}
+  /* SW-map play + vulnerability buttons */
+  #playBtn{background:#1a2535;border-color:#2a3a50;color:#8aa0c0;letter-spacing:2px}
+  #playBtn:hover{color:#aebfd6}
+  #playBtn.playing{background:#7c2d12;border-color:#dc6030;color:#fca070}
+  #vulnBtn{background:transparent;color:#5d6b7a}
+  #vulnBtn.on{background:#450a0a;border-color:#dc2626;color:#fca5a5}
+  #geoBtn.on{background:#3a1505;border-color:#ef6a52;color:#fcd0c0}
+  #fsBtn{background:transparent;color:#5d6b7a}
+  #fsBtn.on{background:#16384e;border-color:#2f6285;color:#cfe0ee}
+  .seg{display:flex;gap:6px;flex-wrap:wrap}
+  .seg .btn.active{background:#1e2a3a;border-color:#3a5070;color:#a0c4e8}
+  .seg-label,.slider-wrap label{font-family:"Spline Sans Mono",monospace;font-size:10px;
+    letter-spacing:0.22em;text-transform:uppercase;color:var(--ink-faint);margin-right:4px}
+  .slider-wrap{display:flex;align-items:center;gap:10px;flex:1;min-width:260px;max-width:700px}
+  input[type=range]{-webkit-appearance:none;appearance:none;height:3px;border-radius:3px;
+    background:linear-gradient(90deg,var(--amber) 0%,var(--amber) var(--fill,0%),#1d3a4f var(--fill,0%));
+    flex:1;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;
+    border-radius:50%;background:var(--amber);border:3px solid #0a1d2e;cursor:pointer;
+    box-shadow:0 0 0 1px var(--amber)}
+  input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--amber);
+    border:3px solid #0a1d2e;cursor:pointer}
+
+  #canvas-wrap{position:relative;width:100%;max-width:1140px;margin:6px auto 0;
+    border:1px solid var(--line);border-radius:14px;overflow:hidden;
+    background:#07080d;
+    box-shadow:0 24px 60px -30px rgba(0,0,0,.8)}
+  canvas#mainCanvas{display:block;width:100%;height:auto}
+  #canvas-wrap:fullscreen{max-width:none;width:100vw;height:100vh;border-radius:0;
+    background:#06151f;display:grid;place-items:center}
+  #canvas-wrap:fullscreen canvas#mainCanvas{width:auto;height:96vh;max-width:99vw}
+  #canvas-wrap:-webkit-full-screen{max-width:none;width:100vw;height:100vh;border-radius:0;
+    background:#06151f;display:grid;place-items:center}
+
+  #tooltip{position:absolute;pointer-events:none;z-index:6;min-width:180px;max-width:240px;
+    background:rgba(8,22,33,.96);border:1px solid #2c536b;border-radius:11px;
+    padding:11px 13px;opacity:0;transform:translateY(4px);transition:opacity .12s;
+    box-shadow:0 16px 40px -16px rgba(0,0,0,.9)}
+  #tooltip.show{opacity:1;transform:none}
+  #tooltip .tt-name{font-family:"Fraunces",serif;font-size:15px;font-weight:600;line-height:1.1}
+  #tooltip .tt-sub{font-family:"Spline Sans Mono",monospace;font-size:10px;color:var(--ink-faint);
+    letter-spacing:0.08em;text-transform:uppercase;margin:2px 0 8px}
+  #tooltip .tt-vol{font-family:"Spline Sans Mono",monospace;font-size:13px;color:var(--amber-soft)}
+  #tooltip .tt-row{display:flex;align-items:center;gap:10px;margin-top:8px}
+  #tooltip canvas{flex:0 0 auto}
+  #tooltip .legend{font-family:"Spline Sans Mono",monospace;font-size:10px;line-height:1.55;color:var(--ink-dim)}
+  #tooltip .legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}
+  #tooltip .tt-vuln{margin-top:9px;padding-top:8px;border-top:1px dashed #2c536b;
+    font-size:11px;color:var(--ink-dim);line-height:1.4}
+.tt-fact{margin-top:9px;padding-top:8px;border-top:1px dashed #2c536b;
+    font-size:11px;color:#cfd6b8;line-height:1.45;font-style:italic}
+.or-head{margin-top:9px;padding-top:8px;border-top:1px dashed #2c536b;
+    font-family:"Spline Sans Mono",monospace;font-size:9px;letter-spacing:0.14em;
+    text-transform:uppercase;color:var(--ink-faint)}
+.or-row{display:flex;align-items:center;gap:7px;margin-top:5px}
+.or-name{flex:0 0 78px;font-size:10.5px;color:#dfe6f0;white-space:nowrap;overflow:hidden}
+.or-track{flex:1;height:5px;background:#16222f;border-radius:3px;overflow:hidden}
+.or-fill{height:100%;background:linear-gradient(90deg,#2b6fb3,#7dd3fc);border-radius:3px}
+.or-val{flex:0 0 92px;text-align:right;font-family:"Spline Sans Mono",monospace;font-size:9.5px;color:#9fb3c8}
+  #tooltip .tt-vuln b{color:#fca5a5}
+
+  /* price window overlay */
+  #priceWin{position:absolute;z-index:5;width:236px;right:14px;top:4px;background:rgba(8,22,33,.92);
+    border:1px solid #234a63;border-radius:12px;padding:11px 13px 9px;backdrop-filter:blur(3px);
+    transition:left .4s,top .4s}
+  #priceWin h4{margin:0;font-family:"Spline Sans Mono",monospace;font-size:9px;letter-spacing:0.16em;
+    text-transform:uppercase;color:var(--ink-faint)}
+  #priceWin .pw-big{font-family:"Fraunces",serif;font-size:18px;line-height:1;margin:3px 0 2px}
+  #priceWin .pw-big .u{font-size:10px;color:var(--ink-faint);font-family:"Spline Sans Mono",monospace}
+  #priceWin .pw-meta{font-family:"Spline Sans Mono",monospace;font-size:10px;color:var(--ink-faint);
+    margin-bottom:6px;letter-spacing:0.04em}
+  #priceCanvas{display:block;width:100%;height:auto;cursor:crosshair}
+  #priceWin .pw-foot{font-family:"Spline Sans Mono",monospace;font-size:9px;color:var(--ink-faint);
+    margin-top:5px;letter-spacing:0.03em}
+
+  .legend-bar{display:flex;flex-wrap:wrap;gap:14px 22px;margin:16px auto 0;max-width:1140px;
+    font-family:"Spline Sans Mono",monospace;font-size:11px;color:var(--ink-dim)}
+  .legend-bar .lg{display:flex;align-items:center;gap:7px}
+  .legend-bar .sw{width:18px;height:5px;border-radius:3px}
+  .legend-bar .sw.dash{background-image:repeating-linear-gradient(90deg,currentColor 0 5px,transparent 5px 9px)}
+  .pitch{max-width:1140px;margin:8px auto 0;border-left:2px solid var(--amber);
+    padding:6px 0 6px 18px;font-family:"Fraunces",serif;font-style:italic;font-size:17px;
+    line-height:1.5;color:var(--ink)}
+  .pitch-credit{max-width:1140px;margin:7px auto 0;padding-left:18px;
+    font-family:"Spline Sans Mono",monospace;font-size:11px;color:var(--ink-faint)}
+  .pitch-credit em{color:var(--ink-dim);font-style:normal}
+  .foot{max-width:1140px;margin:22px auto 0;font-family:"Spline Sans Mono",monospace;
+    font-size:11px;color:var(--ink-faint);line-height:1.6}
+  .foot b{color:var(--ink-dim)}
+  .foot-details{max-width:1140px;margin:14px auto 0}
+  .foot-details summary{font-family:"Spline Sans Mono",monospace;font-size:10px;letter-spacing:0.04em;color:var(--ink-dim);cursor:pointer;padding:7px 0;list-style:none;border-top:1px solid #15202c}
+  .foot-details summary::-webkit-details-marker{display:none}
+  .foot-details summary::before{content:"\25B8  ";color:var(--amber)}
+  .foot-details[open] summary::before{content:"\25BE  "}
+  .foot-details .foot{max-width:none;margin:6px 0 0}
+  a{color:var(--amber-soft)}
+  .sim-btn{background:#000;border-color:#4a7fd4;color:#e8eef8;}
+  .sim-btn.active-sim{background:#3a1d0a;border-color:#e0962a;color:#ffd9a0;}
+  #econ-btn{background:#000;border-color:#22c55e;color:#d9f7e5;}
+  #econ-btn.off{border-color:#1a3325;color:#4a6856;}
+  #sim-note{display:none;position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:20;
+    max-width:54%;box-sizing:border-box;padding:6px 20px;border:1px solid #e0962a66;border-radius:8px;
+    background:rgba(22,16,10,0.92);color:#e8d8c0;font:12px/16px Georgia,serif;text-align:center;}
+  .wrap:fullscreen{background:#06070b;overflow:auto;max-width:100%;padding:14px 30px;}
+  .wrap:-webkit-full-screen{background:#06070b;overflow:auto;max-width:100%;padding:14px 30px;}
+  .sc-title{font-family:"Fraunces",serif;font-size:13.5px;font-weight:600;line-height:1.15;}
+  .sc-sub{font-family:"Spline Sans Mono",monospace;font-size:9px;letter-spacing:0.08em;
+    text-transform:uppercase;color:#6e8296;margin:3px 0 6px;}
+  .sc-body{font-family:"Spline Sans Mono",monospace;font-size:10.5px;color:#c4cad8;line-height:1.5;}
+  .sc-status{font-family:"Spline Sans Mono",monospace;font-size:9.5px;color:#8fa3b5;
+    margin-top:6px;padding-top:6px;border-top:1px solid #1d3447;}
+  .sc-hint{font-family:"Spline Sans Mono",monospace;font-size:9px;color:#6e8296;margin-top:5px;}
+  .sc-note{font-family:Georgia,serif;font-style:italic;font-size:8.5px;color:#5a6b7c;margin-top:4px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <div class="title-block">
+      <p class="kicker">PADD 5 &middot; Hawai&#699;i &middot; The farthest market &mdash; everything arrives by sea</p>
+      <h1>One mooring, one refinery, <span class="em">four islands to feed.</span></h1>
+      <p class="deck">Crude in at one buoy, through the one O&#699;ahu refinery, by barge to every island &mdash; a third becomes jet fuel, and oil still keeps the lights on. All of it 2,400 miles from the mainland: the most isolated major population center on Earth.</p>
+    </div>
+    <div class="yearchip" id="yearChip">2022<span>fiscal year</span></div>
+  </header>
+
+  <div class="controls">
+    <button class="btn" id="fsBtn" title="Toggle fullscreen">&#9974; FULLSCREEN</button>
+    <div class="seg" id="islandSeg">
+      <button class="btn active" data-island="all">All</button>
+      <button class="btn" data-island="oahu">O&#699;ahu</button>
+      <button class="btn" data-island="maui">Maui Co.</button>
+      <button class="btn" data-island="hawaii">Hawai&#699;i Is.</button>
+      <button class="btn" data-island="kauai">Kaua&#699;i</button>
+    </div>
+    <button class="btn" id="vulnBtn">&#9889; VULNERABILITY OFF</button>
+    <button class="btn" id="geoBtn" title="Geothermal lens — Puna (PGV) on the Big Island">🌋 GEOTHERMAL OFF</button>
+    <button class="btn off" id="econ-btn">📈 CURVES OFF</button>
+  </div>
+
+  <div id="canvas-wrap">
+    <canvas id="mainCanvas"></canvas>
+    <div id="sim-note"></div>
+    <div id="tooltip"></div>
+    <div id="priceWin">
+      <h4>Brent crude &middot; refinery's benchmark</h4>
+      <div class="pw-big" id="pwBig">$&mdash;<span class="u"> /bbl</span></div>
+      <div class="pw-meta" id="pwMeta">annual average</div>
+      <canvas id="priceCanvas"></canvas>
+      <div class="pw-foot" id="pwFoot">pause to scrub the 12&#8209;month curve</div>
+    </div>
+  </div>
+
+  <div class="controls" id="sim-controls">
+    <button class="btn sim-btn" data-sim="kapolei" title="The single point of failure: the state's only refinery trips — scenario, grounded in the 2018 IES conversion">⚠ REFINERY DOWN</button>
+    <button class="btn sim-btn" data-sim="iniki92" title="Hurricane Iniki, Sept 11 1992 — Cat 4 direct hit on Kauaʻi">🌀 INIKI ’92</button>
+    <button class="btn sim-btn" data-sim="hilo60" title="Chile M9.5 tsunami, May 1960 — 61 dead in Hilo">🌊 HILO ’60</button>
+    <button class="btn sim-btn" data-sim="kilauea18" title="Kīlauea Lower Puna eruption, May 2018 — lava buries Puna Geothermal Venture; the Big Island backfills ~30% of its power with oil">🌋 KĪLAUEA ’18</button>
+    <button class="btn sim-btn" data-sim="maui23" title="Lahaina fire, Aug 8 2023">🔥 MAUI ’23</button>
+    <button class="btn sim-btn" data-sim="ports02" title="West Coast port lockout, Oct 2002 — the supply line pauses">⚓ PORTS ’02</button>
+    <button class="btn sim-btn" data-sim="covid20" title="2020: trans-Pacific aviation stops — the jet-fuel state's pandemic">🦠 COVID ’20</button>
+    <div style="flex-basis:100%;height:0"></div>
+    <button class="btn" id="playBtn">&#9654; PLAY</button>
+    <div class="slider-wrap">
+      <input type="range" id="yearSlider" min="0" max="26" value="22" step="1">
+    </div>
+  </div>
+  <p class="pitch">There is no pipeline or rail backstop the way the mainland has &mdash; the entire state&rsquo;s crude enters through one buoy 1.5 miles offshore, and 65% of the electricity is still made by burning oil.</p>
+  <p class="pitch-credit">Framing draws on Julian Spector&rsquo;s reporting on Hawai&#699;i&rsquo;s oil dependence for <em>Canary Media</em>.</p>
+
+  <div class="legend-bar">
+    <div class="lg"><span class="sw" style="background:var(--crude)"></span>Imported crude</div>
+    <div class="lg"><span class="sw" style="background:var(--product)"></span>Refined product &mdash; O&#699;ahu pipeline</div>
+    <div class="lg"><span class="sw dash" style="color:var(--product)"></span>Refined product &mdash; inter&#8209;island barge (Jones Act)</div>
+    <div class="lg"><span class="sw dash" style="color:var(--product)"></span>Military fuel &mdash; DLA import to JBPHH</div>
+    <div class="lg"><span class="sw" style="background:#84cc16"></span>Renewable fuels (SAF / RD)</div>
+    <div class="lg"><svg width="26" height="14" viewBox="0 0 38 14" style="flex-shrink:0"><path d="M1 7 L37 7 L33 13 L5 13 Z" fill="#0a1320" stroke="#e0962a" stroke-width="1.1"/><rect x="3" y="1" width="7" height="6" fill="#0a1320" stroke="#e0962a" stroke-width="1.1"/></svg>Ocean tanker &mdash; crude &amp; product from the mainland</div>
+    <div class="lg"><svg width="18" height="15" viewBox="0 0 18 15" style="flex-shrink:0"><path d="M9 1.5 L16.5 11 L1.5 11 Z" fill="rgba(18,13,4,0.92)" stroke="#f59e0b" stroke-width="1.4" stroke-linejoin="round"/><rect x="6" y="7.3" width="6" height="3.2" fill="none" stroke="#f59e0b" stroke-width="1"/><rect x="6.4" y="8.6" width="5.2" height="1.7" fill="#f59e0b" opacity="0.5"/></svg>Terminal &mdash; island harbor (holds &amp; distributes)</div>
+    <div class="lg"><svg width="22" height="16" viewBox="0 0 22 16" style="flex-shrink:0"><rect x="3" y="11" width="16" height="3" fill="#e879f933" stroke="#e879f9"/><path d="M6 11 L6 5 A1.5 1.5 0 0 1 9 5 L9 11 Z" fill="#e879f922" stroke="#f0abfc"/><path d="M11 11 L11 3 A1.5 1.5 0 0 1 14 3 L14 11 Z" fill="#e879f922" stroke="#f0abfc"/></svg>Refinery (distillation towers) &mdash; Kapolei</div>
+    <div class="lg" style="color:var(--ink-faint)">Flow color = fuel; node icon color = destination (jet, power, bunker, island&hellip;)</div>
+  </div>
+
+  <details class="foot-details">
+    <summary>Reading the map &amp; sources</summary>
+  <div class="foot">
+    <b>Reading the map.</b> Ribbon width &amp; particle density scale with annual volume (&#8730; scaling, so small islands stay visible). Solid ribbons are O&#699;ahu pipelines; dashed ribbons are inter&#8209;island barges. Hover any node for its fuel mix; toggle <b>Vulnerability</b> for supply&#8209;fragility rings.<br>
+    <b>Data status.</b> Statewide demand is anchored to <b>EIA Form EIA&#8209;782C Prime Supplier annual sales</b> (thousand gal/day): Total Gasoline (series C100050151), Kerosene&#8209;Type Jet Fuel (C500050151), and No.&nbsp;2 Distillate (C200050151), 2000&ndash;2021. EIA&#8209;782C was discontinued after 2021 (&ldquo;Release Date: 6/1/2022; Next Release Date: TBD&rdquo;), so 2022&ndash;25 extends from EIA SEDS Tables CT1/F2 (jet 15,580 &rarr; 16,724 thousand bbl, 2022&rarr;2024P) and the DBEDT Data Book (Table 18.17). Withheld jet cells (2002&ndash;04, 2008&ndash;11) are filled on the SEDS shape but bracketed to the published series, avoiding SEDS&rsquo; 2005 naphtha&#8209;jet reclassification and 2009&ndash;10 methodology breaks. The three series cover &asymp;73% of all&#8209;products demand; power&#8209;gen oil and other products ride that total. Island shares &amp; fuel pies are calibrated to real ratios (statewide jet &asymp;36%, HNL &asymp;85&ndash;90% of state jet). Import <b>source countries are era&#8209;representative</b> (HSEO Fuel Imports Dashboard / EIA): a 2010&#8209;style Russia&#8209;Indonesia&#8209;Saudi crude slate before ~2016, shifting to the 2025 Argentina&#8209;Libya&#8209;Alaska&#8209;Nigeria slate; imported product moves from a Japan/Korea split to &asymp;90% South Korea. Brent tracks real annual averages; monthly points are illustrative.<br>
+    <b>Sources.</b> EIA Form EIA&#8209;782C, <i>Prime Supplier Report</i> (eia.gov/petroleum/marketing/prime); EIA State Energy Data System, Tables CT1 &amp; F2 (Hawaii); Hawai&#699;i State Energy Office / DBEDT, <i>Energy Data &amp; Trends</i> and Data Book 18.17; Par Pacific filings; EIA Brent spot.
+  </div>
+  </details>
+
+</div>
+
+<script>
+"use strict";
+/* ====================================================================
+   Hawai'i Petroleum-Flow map  (single-file, canvas, animated ribbons)
+   Build per HANDOFF_Hawaii_FuelFlow.md. Demand anchored to EIA-782C / SEDS;
+   supply-chain splits modeled.
+   ==================================================================== */
+
+// ---- canvas / dpr ----
+const W = 1140, H = 720;
+const cv = document.getElementById('mainCanvas');
+const ctx = cv.getContext('2d');
+let zoom=1,panX=0,panY=0,_dragging=false,_lastX=0,_lastY=0,_DPR=window.devicePixelRatio||1;  // ZOOM + HiDPI (sibling port) — native DPR, no cap (crispness, matches PNW/SW)
+function sizeCanvas(){
+  _DPR = window.devicePixelRatio||1; const dpr=_DPR;
+  cv.width = W*dpr; cv.height = H*dpr;
+  cv.style.aspectRatio = W+'/'+H;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+sizeCanvas();
+window.addEventListener('resize', ()=>{ sizeCanvas(); placePriceWin(); });
+
+// ---- years ----
+const FISCAL_YEARS = [];
+for (let y=2000; y<=2026; y++) FISCAL_YEARS.push(y);
+const LASTREAL_IDX = 25;   // FY2025 is the last year EIA has reported; FY2026 is HELD, not measured
+let yearIdx = 22;            // 2022 default
+let playing = false;
+let activeIsland = 'all';
+let showVuln = false;
+let geoView = false, geoPhase = 0;
+
+// ---- demand model (placeholder, M gal/yr) ----
+// statewide demand: EIA-782C Prime Supplier annual anchors, thousand gal/day
+// cols: [gasoline C100050151, kerosene-type jet C500050151, No.2 distillate C200050151]
+// (i) = withheld "W" cell filled on EIA SEDS shape, bracketed to the published series
+// 2022-25 extended from EIA SEDS Tables CT1/F2 + DBEDT Data Book 18.17 (est.)
+const HI_ANCH={
+ 2000:[1006.6, 912.3,609.9], 2001:[1074.4, 898.4,653.3],
+ 2002:[1153.6,1172  ,593.1], 2003:[1219.5,1462  ,636  ], // jet+dist (i)
+ 2004:[1237.8,1540  ,679  ], 2005:[1251.2,1641.3,721  ], // dist (i)
+ 2006:[1320.8,1488.1,764.4], 2007:[1297.4,1269.3,743.9],
+ 2008:[1323.7,1235  ,596.7], 2009:[1336.1,1075  ,579.0], // jet (i)
+ 2010:[1180.6,1160  ,686.3], 2011:[1186.4,1190  ,623.2], // jet (i)
+ 2012:[1191.6,1205.2,605.6], 2013:[1193.3,1215.6,484.1],
+ 2014:[1191.9,1367.9,553.7], 2015:[1280.1,1408.4,728.2],
+ 2016:[1310.9,1289.6,676.7], 2017:[1309.8,1339.3,727.5],
+ 2018:[1271.5,1577.5,772.6], 2019:[1275.0,1713.5,745  ], // dist (i)
+ 2020:[1129.9, 991.8,640  ], 2021:[1204.7,1507.6,690.8], // dist (i)
+ 2022:[1132  ,1743  ,700  ], 2023:[1149  ,1880  ,705  ], // SEDS-anchored est.
+ 2024:[1150  ,1870  ,705  ], 2025:[1150  ,1875  ,705  ],
+  2026:[1150 ,1875 ,705 ]   // FY2026 HELD at FY2025 — EIA has not reported the year  // SEDS 2024P + est.
+};
+// the three series cover ~73% of all-products demand (power-gen resid + other = rest)
+function statewideTotal(year){
+  const y0=Math.max(2000,Math.min(2026,Math.floor(year))), y1=Math.min(2026,y0+1), fr=Math.max(0,year-y0);
+  const s=y=>HI_ANCH[y][0]+HI_ANCH[y][1]+HI_ANCH[y][2];
+  const kgd=s(y0)+(s(y1)-s(y0))*fr;
+  return kgd/0.73*0.365;   // thousand gal/day -> all-products M gal/yr
+}
+
+const ISLAND_SHARE = { oahu:0.62, maui:0.16, hawaii:0.15, kauai:0.07 };
+
+// per-island fuel-mix pies (sum to 1.0) — gasoline/diesel/jetfuel/powerfuel/other
+const ISLAND_PIE = {  // calibrated: statewide jet ~36% (prime-supplier ratio), HNL ~85-90% of state jet
+  oahu:   {gasoline:0.22, diesel:0.06, jetfuel:0.50, powerfuel:0.18, other:0.04}, // HNL + Kahe/Waiau LSFO
+  maui:   {gasoline:0.32, diesel:0.14, jetfuel:0.18, powerfuel:0.28, other:0.08}, // OGG + MECO oil units
+  hawaii: {gasoline:0.36, diesel:0.16, jetfuel:0.12, powerfuel:0.32, other:0.04}, // HELCO oil-heavy grid
+  kauai:  {gasoline:0.38, diesel:0.16, jetfuel:0.12, powerfuel:0.30, other:0.04}  // KIUC diesel/naphtha
+};
+const FUEL_COLORS = {gasoline:'#f59e0b', diesel:'#38bdf8', jetfuel:'#a78bfa', powerfuel:'#b91c1c', other:'#6b7280'};
+const FUEL_LABELS = {gasoline:'Gasoline', diesel:'Diesel', jetfuel:'Jet fuel', powerfuel:'Power-gen oil', other:'Other'};
+const ISLAND_OF = { oahu:'oahu', maui:'maui', hawaii:'hawaii', kauai:'kauai' };
+
+// jet share shrinks in 2020-21 (aviation), recovers — adjust pie dynamically
+function pieForYear(islandKey, year){
+  const base = ISLAND_PIE[islandKey];
+  let jetMul = 1;
+  if (year===2020) jetMul=0.72; else if (year===2021) jetMul=0.89;   // real 2020/21 jet ratios
+  else if (year===2022) jetMul=0.97;                                  // (EIA-782C / SEDS)
+  if (jetMul===1) return base;
+  const lostJet = base.jetfuel*(1-jetMul);
+  // redistribute lost jet share to gasoline/power proportionally
+  return {
+    gasoline: base.gasoline + lostJet*0.55,
+    diesel:   base.diesel   + lostJet*0.10,
+    jetfuel:  base.jetfuel*jetMul,
+    powerfuel:base.powerfuel+ lostJet*0.30,
+    other:    base.other    + lostJet*0.05
+  };
+}
+
+// ---- nodes ----
+// Par Hawaii's renewable fuels unit (SAF / renewable diesel). ANNOUNCED April 2023 ($90M conversion of a
+// 2019 hydrotreater); the Hawaii Renewables JV (Mitsubishi + ENEOS) closed Oct 2025; COMMERCIAL OPERATIONS
+// BEGAN 2026 (~61 M gal/yr). Before 2023 it does not exist. From 2023-2025 it is STEEL, not fuel: a dashed
+// "coming" ghost — the family's convention — with no ribbon and no volume.
+const RENEW_COD = 2026, RENEW_ANNOUNCED = 2023;
+const NODES = {
+  crudeSPM:    {x:62,  y:380, label:"Barbers Pt. SPM",       role:"crude import (tanker)", color:'#378add', island:'both', shape:'tanker'},
+  prodImport:  {x:62,  y:540, label:"Imported product",      role:"jet / diesel top-up",   color:'#f59e0b', island:'both', shape:'tanker'},
+  kapolei:     {x:250, y:418, label:"Kapolei refinery",      role:"Par East 94k b/d", color:'#e879f9', island:'oahu', shape:'refinery'},
+  renewables:  {x:250, y:300, label:"Renewable fuels unit",  role:"SAF / renewable diesel", color:'#84cc16', island:'oahu', shape:'refinery'},
+  oahuPipe:    {x:430, y:430, label:"O\u02bbahu distribution", role:"pipeline + terminal junction", color:'#f59e0b', island:'oahu', shape:'junction'},
+  oahuJet:     {x:585, y:322, label:"HNL (civil jet)",       role:"Honolulu Int\u2019l \u00b7 commercial aviation", color:'#a78bfa', island:'oahu', shape:'plane'},
+  jbphh:       {x:520, y:236, label:"JBPHH \u00b7 Pearl Harbor", role:"Navy + Hickam AFB \u00b7 JP-5 / F-76 / jet", color:'#64748b', island:'oahu', shape:'terminal', flag:true},
+  oahuGround:  {x:600, y:470, label:"Honolulu metro",        role:"ground: gasoline + diesel", color:'#ef4444', island:'oahu', shape:'circle'},
+  oahuPower:   {x:585, y:575, label:"HECO oil plants",       role:"Kahe + Waiau \u00b7 burns LSFO + diesel \u2192 electricity", color:'#b91c1c', island:'oahu', shape:'bolt'},
+  honoluluBunker:{x:430,y:610, label:"Honolulu bunker",      role:"marine ship fuel",       color:'#0d9488', island:'oahu', shape:'anchor'},
+  kauai:       {x:355, y:118, label:"Kaua\u02bbi",            role:"N\u0101wiliwili \u00b7 KIUC", color:'#3b82f6', island:'kauai', shape:'terminal'},
+  molokai:     {x:702, y:398, label:"Moloka\u02bbi",          role:"Kaunakakai harbor",      color:'#f59e0b', island:'maui', shape:'terminal'},
+  lanai:       {x:718, y:456, label:"L\u0101na\u02bbi",        role:"Kaumalapau harbor",      color:'#f59e0b', island:'maui', shape:'terminal'},
+  mauiCo:      {x:808, y:414, label:"Maui",                  role:"Kahului harbor + OGG jet", color:'#f59e0b', island:'maui', shape:'terminal'},
+  hawaiiKona:  {x:906, y:520, label:"Kona / Kawaihae",       role:"West Hawai\u02bbi Island", color:'#22c55e', island:'hawaii', shape:'terminal'},
+  hawaiiHilo:  {x:1012,y:556, label:"Hilo",                  role:"East Hawai\u02bbi Island", color:'#22c55e', island:'hawaii', shape:'terminal'},
+  mauiPower:   {x:866, y:456, label:"MECO",                  role:"Maui Electric \u00b7 burns oil + diesel \u2192 electricity", color:'#b91c1c', island:'maui', shape:'bolt'},
+  hawaiiPower: {x:978, y:606, label:"HELCO",                 role:"Hawai\u02bbi Electric Light \u00b7 oil + diesel \u2192 electricity", color:'#b91c1c', island:'hawaii', shape:'bolt'},
+  kauaiPower:  {x:300, y:170, label:"KIUC",                  role:"Kaua\u02bbi Co-op \u00b7 mostly renewable, some diesel", color:'#b91c1c', island:'kauai', shape:'bolt'}
+};
+
+// ---- links: from,to, kind, color, dashed ----
+// 'frac' fractions describe how a parent flow splits; volumes computed per year.
+const LINKS = [
+  {id:'crude',   from:'crudeSPM',  to:'kapolei',   color:'#378add', dashed:false, kind:'crude'},
+  {id:'pimport', from:'prodImport',to:'oahuPipe',  color:'#f59e0b', dashed:true,  kind:'import'},
+  {id:'renew',   from:'renewables',to:'oahuPipe',  color:'#84cc16', dashed:false, kind:'product', minYear:RENEW_COD},
+  {id:'refprod', from:'kapolei',   to:'oahuPipe',  color:'#f59e0b', dashed:false, kind:'product'},
+  // Oahu pipelines (solid)
+  {id:'o_jet',   from:'oahuPipe',  to:'oahuJet',   color:'#f59e0b', dashed:false, kind:'jet'},
+  {id:'o_mil',   from:'oahuPipe',  to:'jbphh',     color:'#f59e0b', dashed:false, kind:'mil'},
+  {id:'mil_imp', from:'prodImport',to:'jbphh',     color:'#f59e0b', dashed:true,  kind:'mil'},
+  {id:'o_grd',   from:'oahuPipe',  to:'oahuGround',color:'#f59e0b', dashed:false, kind:'ground'},
+  {id:'o_pwr',   from:'oahuPipe',  to:'oahuPower', color:'#f59e0b', dashed:false, kind:'power'},
+  {id:'o_bnk',   from:'oahuPipe',  to:'honoluluBunker', color:'#f59e0b', dashed:false, kind:'bunker'},
+  // inter-island barges (dashed)
+  {id:'b_kauai', from:'oahuPipe',  to:'kauai',     color:'#f59e0b', dashed:true, kind:'barge'},
+  {id:'b_molo',  from:'oahuPipe',  to:'molokai',   color:'#f59e0b', dashed:true, kind:'barge'},
+  {id:'b_lanai', from:'oahuPipe',  to:'lanai',     color:'#f59e0b', dashed:true, kind:'barge'},
+  {id:'b_maui',  from:'oahuPipe',  to:'mauiCo',    color:'#f59e0b', dashed:true, kind:'barge'},
+  {id:'b_kona',  from:'oahuPipe',  to:'hawaiiKona',color:'#f59e0b', dashed:true, kind:'barge'},
+  {id:'b_hilo',  from:'oahuPipe',  to:'hawaiiHilo',color:'#f59e0b', dashed:true, kind:'barge'},
+  // each island burns its own oil/diesel for electricity (isolated grids)
+  {id:'m_pwr',   from:'mauiCo',    to:'mauiPower',  color:'#f59e0b', dashed:false, kind:'power'},
+  {id:'h_pwr',   from:'hawaiiKona',to:'hawaiiPower',color:'#f59e0b', dashed:false, kind:'power'},
+  {id:'k_pwr',   from:'kauai',     to:'kauaiPower', color:'#f59e0b', dashed:false, kind:'power'}
+];
+
+// ---- volumes per frame ----
+let nodeVol = {}, linkVol = {};
+// ═══ DISASTER SIM ENGINE ═══
+let simScn=null,simMonth=0,simMonthF=0,simPlaying=false,prevSimMonth=-1,simShake=0,simShakeAmp=4;
+let simArmed=false,simPreroll=0;
+let econShow=false,eqTrail=[];
+let covidV=[];
+let simAC=null;
+function _ac(){if(!simAC)simAC=new (window.AudioContext||window.webkitAudioContext)();if(simAC.state==="suspended")simAC.resume();return simAC;}
+function quakeRumble(vol,dur){try{const ac=_ac(),t0=ac.currentTime;const b=ac.createBuffer(1,ac.sampleRate*dur,ac.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,1.6);const s=ac.createBufferSource();s.buffer=b;const f=ac.createBiquadFilter();f.type="lowpass";f.frequency.value=75;const g=ac.createGain();g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(vol,t0+0.3);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);s.connect(f);f.connect(g);g.connect(ac.destination);s.start(t0);}catch(e){}}
+function explosion(vol){try{const ac=_ac(),t0=ac.currentTime+0.07;const o=ac.createOscillator();o.type="sine";o.frequency.setValueAtTime(300,t0);o.frequency.exponentialRampToValueAtTime(40,t0+1.6);const o2=ac.createOscillator();o2.type="sine";o2.frequency.setValueAtTime(46,t0);o2.frequency.exponentialRampToValueAtTime(19,t0+4);const g=ac.createGain();g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(vol,t0+0.09);g.gain.exponentialRampToValueAtTime(0.0001,t0+4.2);o.connect(g);o2.connect(g);g.connect(ac.destination);o.start(t0);o2.start(t0);o.stop(t0+4.3);o2.stop(t0+4.3);}catch(e){}}
+function sirens(delayMs,vol,dur){try{const ac=_ac(),t0=ac.currentTime+delayMs/1000;[0,0.9].forEach(off=>{const o=ac.createOscillator();o.type="triangle";const g=ac.createGain();g.gain.value=vol;const l=ac.createOscillator();l.frequency.value=0.45;const lg=ac.createGain();lg.gain.value=260;l.connect(lg);lg.connect(o.frequency);o.frequency.value=750;o.connect(g);g.connect(ac.destination);o.start(t0+off);o.stop(t0+off+dur);l.start(t0+off);l.stop(t0+off+dur);});}catch(e){}}
+function tsunamiSwoosh(delayMs,vol,dur,fLo,fHi){try{const ac=_ac(),t0=ac.currentTime+delayMs/1000;dur=dur||2.8;fLo=fLo||220;fHi=fHi||950;const b=ac.createBuffer(1,ac.sampleRate*dur,ac.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const s=ac.createBufferSource();s.buffer=b;const f=ac.createBiquadFilter();f.type="bandpass";f.Q.value=0.6;f.frequency.setValueAtTime(fLo,t0);f.frequency.exponentialRampToValueAtTime(fHi,t0+dur*0.45);f.frequency.exponentialRampToValueAtTime(fLo*1.2,t0+dur);const g=ac.createGain();g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(vol,t0+dur*0.4);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);s.connect(f);f.connect(g);g.connect(ac.destination);s.start(t0);}catch(e){}}
+function crackle(delayMs,vol,dur){try{const ac=_ac(),t0=ac.currentTime+delayMs/1000;for(let i=0;i<40;i++){const t=t0+Math.random()*dur;const o=ac.createOscillator();o.type="square";o.frequency.value=120+Math.random()*900;const g=ac.createGain();g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol*(0.3+Math.random()*0.7),t+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+0.05+Math.random()*0.1);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+0.2);}}catch(e){}}
+function windHowl(vol,dur){try{const ac=_ac(),t0=ac.currentTime;const b=ac.createBuffer(1,ac.sampleRate*dur,ac.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const s=ac.createBufferSource();s.buffer=b;const f=ac.createBiquadFilter();f.type="bandpass";f.Q.value=1.4;f.frequency.value=420;const l=ac.createOscillator();l.frequency.value=0.3;const lg=ac.createGain();lg.gain.value=260;l.connect(lg);lg.connect(f.frequency);const g=ac.createGain();g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(vol,t0+1);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);s.connect(f);f.connect(g);g.connect(ac.destination);s.start(t0);l.start(t0);l.stop(t0+dur);}catch(e){}}
+
+function covidDrone(vol,dur){try{const ac=_ac(),t0=ac.currentTime;[[64,1],[64.4,0.9],[128.8,0.35],[193.2,0.18]].forEach(pr=>{const o=ac.createOscillator();o.type="sine";o.frequency.value=pr[0];const g=ac.createGain();const v=vol*pr[1];g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(v,t0+1.6);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);const l=ac.createOscillator();l.frequency.value=0.13;const lg=ac.createGain();lg.gain.value=v*0.5;l.connect(lg);lg.connect(g.gain);o.connect(g);g.connect(ac.destination);o.start(t0);o.stop(t0+dur);l.start(t0);l.stop(t0+dur);});}catch(e){}}
+function warningSiren(delayMs,vol,cycles){try{const ac=_ac(),t0=ac.currentTime+delayMs/1000;const cyc=4.5;const o=ac.createOscillator();o.type="sawtooth";const f=ac.createBiquadFilter();f.type="lowpass";f.frequency.value=1200;const g=ac.createGain();g.gain.setValueAtTime(0.0001,t0);g.gain.linearRampToValueAtTime(vol,t0+1.2);g.gain.setValueAtTime(vol,t0+cycles*cyc-1.5);g.gain.linearRampToValueAtTime(0.0001,t0+cycles*cyc);o.frequency.setValueAtTime(300,t0);for(let i=0;i<cycles;i++){o.frequency.linearRampToValueAtTime(740,t0+i*cyc+cyc*0.5);o.frequency.linearRampToValueAtTime(300,t0+(i+1)*cyc);}o.connect(f);f.connect(g);g.connect(ac.destination);o.start(t0);o.stop(t0+cycles*cyc+0.2);}catch(e){}}
+function fireCrackle(delayMs,vol,dur){try{const ac=_ac(),t0=ac.currentTime+delayMs/1000;for(let i=0;i<55;i++){const t=t0+Math.random()*dur;const len=0.02+Math.random()*0.06;const b=ac.createBuffer(1,ac.sampleRate*len,ac.sampleRate),d=b.getChannelData(0);for(let j=0;j<d.length;j++)d[j]=(Math.random()*2-1)*(1-j/d.length);const s=ac.createBufferSource();s.buffer=b;const f=ac.createBiquadFilter();f.type="highpass";f.frequency.value=1500+Math.random()*2500;const g=ac.createGain();g.gain.value=vol*(0.3+Math.random()*0.7);s.connect(f);f.connect(g);g.connect(ac.destination);s.start(t);}}catch(e){}}
+function simRecoveryText(d){
+  for(let i=0;i<d.length;i++){if(Math.abs(d[i]-1)<0.01)return "back to normal by month "+i;}
+  const last=d[d.length-1];
+  return (last>1?"still running at "+Math.round(last*100)+"% at month 12":"still at "+Math.round(last*100)+"% of normal at month 12");
+}
+const HI_FACT={
+  oahuPower:"Yes \u2014 oil, burned to make electricity. O\u02bbahu\u2019s grid still leans on petroleum in a way mainlanders find almost unbelievable: many of these kilowatts crossed an ocean as crude.",
+  prodImport:"No grid to lean on, no neighboring state, no pipeline from anywhere. What the islands cannot make must arrive finished \u2014 weeks away, by water.",
+  crudeSPM:"Every drop begins here: one buoy in open water, one hose to shore, 2,400 miles from the nearest mainland refinery row."
+};
+const SIM_SCN={
+  kapolei:{name:"REFINERY DOWN \u00b7 THE SINGLE POINT OF FAILURE \u00b7 SCENARIO",
+    dmg:{kapolei:[0,0.3,0.6,0.85,1],crude:[0,0.3,0.6,0.85,1],crudeSPM:[0.15,0.35,0.65,0.85,1],refprod:[0,0.3,0.6,0.85,1],prodImport:[1.6,1.5,1.3,1.1,1],pimport:[2.2,2,1.6,1.2,1],renewables:[1.05,1]},
+    notes:["A major upset \u2014 fire, mechanical failure, power loss, take your pick \u2014 trips Par Kapolei offline. And since 2018, when the islands\u2019 second refinery became a mere import terminal, this is the only refinery in the state of Hawai\u02bbi. A scenario, not a rerun \u2014 but the geometry is real and singular.",
+    "The green rings mark the only possible answer: product cargoes, summoned across an ocean. Jet, gasoline, diesel \u2014 everything Kapolei made must now arrive finished, on tankers that take two to three weeks to come from Asia or the West Coast. The state\u2019s tank farms are the bridge: roughly a month of stocks, draining.",
+    "First replacement cargoes landing in rotation. The import lane runs at double its normal rate.",
+    "Partial restart \u2014 one train up. The cargo surge eases.",
+    "Full rates. The post-mortem question every islander should ask: how many days of fuel does Hawai\u02bbi hold, and who is watching that number?",
+    "Steady state.","Steady state.","Steady state.","Steady state.","Steady state.","Steady state.","Steady state.",
+    "The starkest single-point-of-failure on any of these maps: one mooring, one refinery, four islands. The Southwest's spec wall has cousins; Kapolei has none."]},
+  iniki92:{name:"HURRICANE INIKI \u00b7 SEPTEMBER 11, 1992",
+    dmg:{kauai:[0.3,0.5,0.7,0.85,0.95,1],b_kauai:[0.3,1.3,1.2,1.1,1.05,1],oahuGround:[0.97,1],oahuJet:[0.95,0.98,1]},
+    notes:["September 11, 1992: Iniki, a Category 4, makes a direct hit on Kaua\u02bbi \u2014 the strongest hurricane to strike Hawai\u02bbi in recorded history. 1,400 homes destroyed; the island\u2019s grid is simply gone.",
+    "N\u0101wiliwili harbor reopens within days, and the green ring marks the lifeline working in reverse of its usual rhythm: relief barges surging from O\u02bbahu \u2014 generators, diesel for them, fuel for the rebuild fleet \u2014 to an island whose normal demand has collapsed with its economy.",
+    "KIUC rebuilds line by line; demand recovers as power does \u2014 a demand curve drawn by utility poles.",
+    "Tourism, Kaua\u02bbi\u2019s blood, begins its slow return.",
+    "Near-normal flows.","Recovered \u2014 in fuel terms. The island\u2019s economy took years longer.",
+    "Steady state.","Steady state.","Steady state.","Steady state.","Steady state.","Steady state.",
+    "The barge network is Hawai\u02bbi\u2019s grid: when one island falls, O\u02bbahu\u2019s harbor becomes its hospital. Iniki proved the system\u2019s reach \u2014 and that the single point of failure is never the barges; it\u2019s what they load from."]},
+  hilo60:{name:"CHILE M9.5 TSUNAMI \u00b7 HILO \u00b7 MAY 23, 1960",
+    dmg:{hawaiiHilo:[0.6,0.8,0.95,1],b_hilo:[0.6,0.85,1],honoluluBunker:[0.95,1]},
+    notes:["The Valdivia earthquake \u2014 M9.5, the largest ever recorded \u2014 sends its tsunami across the Pacific. Hawai\u02bbi has roughly fifteen hours of warning, and the sirens sound.",
+    "But Hilo\u2019s funnel-shaped bay focuses the wave to 35 feet, and 61 people die \u2014 many of whom had heard the sirens and returned to the waterfront after the first, smaller waves. The hardest lesson in the warning system\u2019s history: warnings only work when they are believed \u2014 and understood. Many never grasped that the siren meant evacuate, not merely beware; others took the small first waves as proof the danger had passed.",
+    "Hilo\u2019s harbor and waterfront fuel infrastructure repair within weeks; the bayfront itself was never rebuilt \u2014 today it is parks and open space, a memorial in the shape of a setback.",
+    "Normal flows. The same event appears on the Southwest map as CHILE \u201960, where California\u2019s cleared harbors made it the gentlest scenario on the board \u2014 here, the same fifteen hours of warning was not enough, because geography and human nature both bent the other way.",
+    "Steady state.","Steady state.","Steady state.","Steady state.","Steady state.","Steady state.","Steady state.","Steady state.",
+    "One earthquake, two maps, two endings: distance plus warning is the best seawall \u2014 unless the bay focuses the wave and the people walk back to look."]},
+  kilauea18:{name:"KĪLAUEA 2018 · LOWER PUNA · THE FIRM RENEWABLE LOST",
+    dmg:{hawaiiPower:[1.0,1.22,1.4,1.42,1.42,1.41,1.4,1.4,1.39,1.39,1.38,1.38,1.38],
+      h_pwr:[1.0,1.22,1.4,1.42,1.42,1.41,1.4,1.4,1.39,1.39,1.38,1.38,1.38],
+      b_hilo:[1.0,1.1,1.22,1.24,1.24,1.23,1.22,1.22,1.21,1.21,1.2,1.2,1.2],
+      b_kona:[1.0,1.06,1.12,1.13,1.13,1.12,1.12,1.11,1.11,1.1,1.1,1.1,1.1]},
+    notes:["May 3, 2018: Kīlauea\u2019s Lower East Rift Zone tears open at Leilani Estates. Fissure 8 will pour lava to the sea for three months \u2014 and on the way it overruns Puna Geothermal Venture, the 38 MW plant supplying roughly a third of the Big Island\u2019s electricity.",
+    "PGV goes dark. There is no firm renewable left on the island, and the only thing that replaces 30% of a grid overnight is oil. HELCO\u2019s units throttle up \u2014 watch the red node swell. The volcano that gave the island its one homegrown power just took it back.",
+    "The barge lane to Hilo thickens to feed the extra burn. Lava buries Highway 137 and seals off Lower Puna; the fuel ledger, though, is dominated by one number \u2014 the oil now standing in for geothermal, every hour, day and night.",
+    "Fissure 8 builds a cinder cone and the Kapoho ocean entry fills a bay with new land. The eruption\u2019s fuel cost was never the lava \u2014 it\u2019s the megawatt-hours of imported oil burned to replace the plant it buried.",
+    "The eruption pauses in early August. PGV is offline and buried \u2014 recovery measured in years, not months. The oil backfill becomes the new baseline.",
+    "Steady, elevated burn. Every month PGV stays down is a month the Big Island runs about a third more oil than it should \u2014 and pays the tanker for it.",
+    "Ormat and HELCO begin the slow work of clearing and recovering the wells; diesel and LSFO carry the load in the meantime.",
+    "Steady state \u2014 elevated. Island oil demand sits well above where the geothermal plant would have held it.",
+    "Steady state \u2014 elevated.","Steady state \u2014 elevated.","Steady state \u2014 elevated.","Steady state \u2014 elevated.",
+    "PGV finally came back to the grid in November 2020 \u2014 about thirty months dark. The lesson this map exists to tell: Hawai\u02bbi\u2019s one firm renewable can be taken by the same earth that made it, and the only backstop is the tanker. Toggle the 🌋 GEOTHERMAL lens to see the plant this scenario silenced."]},
+  maui23:{name:"LAHAINA FIRE \u00b7 AUGUST 8, 2023",
+    dmg:{mauiCo:[1.02,0.92,0.95,0.98,1],b_maui:[1.02,0.93,0.96,1]},
+    notes:["August 8, 2023: wind-driven fire destroys Lahaina \u2014 102 dead, a historic town erased. One of the deadliest American fires in a century is burning on this map\u2019s easternmost big island.",
+    "And the fuel system\u2019s ledger barely moves: Kahului harbor untouched, the barge schedule unbroken. A brief surge \u2014 generators, relief convoys, evacuation driving \u2014 then the dip: a town\u2019s demand, gone, and tourism paused in mourning.",
+    "West Maui reopens to visitors amid raw debate about what recovery should mean.",
+    "Statistically near normal \u2014 while thousands remain displaced. Fuel-flow recovery and human recovery run on different clocks; this scenario, like the LA fires on the Southwest map, exists to keep that distinction honest.",
+    "Steady state.","Steady state.","Steady state.","Steady state.","Steady state.","Steady state.","Steady state.","Steady state.",
+    "The maps measure infrastructure and aggregate flow \u2014 not tragedy. Lahaina is the starkest proof in the whole series."]},
+  ports02:{name:"WEST COAST PORT LOCKOUT \u00b7 OCTOBER 2002",
+    dmg:{prodImport:[0.8,0.95,1],pimport:[0.78,0.95,1],crudeSPM:[0.9,0.97,1],crude:[0.9,0.97,1]},
+    notes:["October 2002: a labor lockout closes 29 West Coast ports for ten days \u2014 and Hawai\u02bbi, at the end of every supply line, feels the pause coming before it arrives.",
+    "Crude and product cargoes slip schedule. Nothing runs dry: the state\u2019s tank farms \u2014 roughly a month of stocks \u2014 do exactly what they exist to do, bridging the gap while the queue untangles.",
+    "Schedules normalize. The lesson is the buffer: for an island chain, storage is not convenience, it is the entire defense against a supply line measured in weeks.",
+    "Steady state.","Steady state.","Steady state.","Steady state.","Steady state.","Steady state.","Steady state.","Steady state.","Steady state.",
+    "The gentle scenario with the sharpest policy point: every fuel emergency Hawai\u02bbi will ever have begins as a shipping story, and ends wherever the tank gauges say it ends."]},
+  covid20:{name:"COVID-19 \u00b7 2020 \u00b7 THE JET-FUEL STATE GROUNDED",
+    dmg:{oahuJet:[0.2,0.25,0.35,0.45,0.55,0.65,0.75,0.85,0.92,1],o_jet:[0.2,0.25,0.35,0.45,0.55,0.65,0.75,0.85,0.92,1],oahuGround:[0.7,0.75,0.8,0.88,0.95,1],o_grd:[0.7,0.75,0.8,0.88,0.95,1],kapolei:[0.7,0.72,0.78,0.85,0.92,1],crude:[0.7,0.72,0.78,0.85,0.92,1],crudeSPM:[0.7,0.72,0.78,0.85,0.92,1],refprod:[0.7,0.72,0.78,0.85,0.92,1],mauiCo:[0.7,0.75,0.85,0.95,1],hawaiiKona:[0.75,0.8,0.9,1],kauai:[0.72,0.78,0.9,1],honoluluBunker:[0.8,0.85,0.95,1],oahuPower:[0.95,0.97,1]},
+    notes:["March 2020: trans-Pacific aviation stops. No state in America is built like Hawai\u02bbi \u2014 nearly half its fuel is jet \u2014 and no state\u2019s demand falls so far so fast.",
+    "HNL jet fuel at 20% \u2014 the deepest single-sector collapse on any of these maps. Tourism\u2019s halt cascades island by island; only HECO\u2019s power plants hold, because the lights stay on for the people already home.",
+    "The 14-day quarantine throttles arrivals to a trickle. Kapolei cuts runs toward turndown limits \u2014 a refinery built for an economy that has paused.",
+    "Pre-travel testing opens a slow valve in October.",
+    "A creeping recovery, jet last of all.","Vaccinated travel begins to refill the great-circle routes.",
+    "Mainland tourism surges back ahead of international.","Near normal in volume \u2014 different in shape.",
+    "Recovered.","Steady state.","Steady state.","Steady state.",
+    "Every map\u2019s COVID scenario has its own signature: the Gulf\u2019s negative WTI, Alaska\u2019s silent cruise docks. Hawai\u02bbi\u2019s is the purest: a demand structure built on flight, grounded."]}
+};
+const SIM_BLURBS={
+  kapolei:{kapolei:"The state\u2019s only refinery, dark \u2014 since the 2018 IES conversion there is no second plant.",prodImport:"Green ring: the only answer \u2014 finished product, summoned across an ocean, two to three weeks away.",crudeSPM:"No refinery to feed \u2014 the mooring waits."},
+  iniki92:{kauai:"The grid is gone \u2014 demand collapsed with the island\u2019s economy.",b_kauai:"Green ring: relief barges \u2014 O\u02bbahu\u2019s harbor becomes Kaua\u02bbi\u2019s hospital."},
+  hilo60:{hawaiiHilo:"The funnel bay focused the wave to 35 feet \u2014 61 dead, many who returned after the sirens.",honoluluBunker:"Harbors statewide pause while the wave train passes \u2014 hours, not days."},
+  kilauea18:{hawaiiPower:"HELCO burns more oil and diesel to replace the ~30% of island power lost when lava buried PGV.",h_pwr:"The oil that stands in for geothermal \u2014 thicker every month PGV stays dark.",b_hilo:"More product across the channel to feed the extra burn."},
+  maui23:{mauiCo:"Brief relief surge, then the dip \u2014 a town\u2019s demand gone, tourism paused in mourning. Kahului harbor untouched."},
+  ports02:{prodImport:"Cargoes slip schedule \u2014 the tank farms bridge, as designed.",crudeSPM:"The queue pauses at the far end of the longest supply line in America."},
+  covid20:{oahuJet:"20% \u2014 the deepest single-sector collapse on any of these maps.",oahuPower:"The lights stay on for the people already home.",kapolei:"Run cuts toward turndown limits \u2014 a refinery built for an economy on pause."}
+};
+const RESCUE={
+  kapolei:{prodImport:"\u25b2 cargoes replace the refinery",pimport:"",renewables:""},
+  iniki92:{b_kauai:"\u25b2 relief barges from O\u02bbahu"},
+  maui23:{}
+};
+const ECON={
+  kapolei:{s:[0.35,0.5,0.7,0.9,1],d:[1],steepD:2.2,note:"The island demand curve is a wall \u2014 no substitutes, no neighbors. A supply shift this size, against this slope, is a price event."},
+  iniki92:{s:[0.97,1],d:[0.93,0.96,0.99,1],note:"Localized demand destruction \u2014 an island\u2019s economy knocked flat shifts D left."},
+  hilo60:{s:[0.99,1],d:[0.99,1],note:"The whisper \u2014 a wave that took lives, not throughput."},
+  maui23:{s:[1],d:[1.01,0.97,0.99,1],note:"A flicker right (relief), then left (loss) \u2014 tragedy at the scale the ledger can barely see."},
+  ports02:{s:[0.9,0.97,1],d:[1],note:"A supply-line pause buffered by storage \u2014 S edges left, the tanks flatten the price."},
+  covid20:{s:[1,0.95,0.92,0.95,1],d:[0.45,0.5,0.58,0.66,0.75,0.85,0.93,1],note:"The deepest demand collapse on any map \u2014 the jet-fuel state, grounded. Price falls with quantity."}
+};
+const HI_GAS_PRICE=[1.9,2.0,1.9,2.1,2.4,2.75,3.1,3.3,3.9,3.0,3.5,4.3,4.4,4.3,4.2,3.5,3.0,3.2,3.6,3.7,3.4,4.0,5.2,4.8,4.7,4.6,4.6];
+function econFactor(arr,mF){if(!arr)return 1;const m0=Math.floor(mF),fr=mF-m0;const v0=arr[Math.min(m0,arr.length-1)],v1=arr[Math.min(m0+1,arr.length-1)];return v0+(v1-v0)*fr;}
+function simFactor(key,mF){if(simScn&&!simArmed)return 1;const d=simScn&&SIM_SCN[simScn].dmg[key];if(!d)return 1;const m0=Math.floor(mF),fr=mF-m0;const v0=d[Math.min(m0,d.length-1)],v1=d[Math.min(m0+1,d.length-1)];return v0+(v1-v0)*fr;}
+
+function buildFrame(year){
+  const total = statewideTotal(year);
+  const oT = total*ISLAND_SHARE.oahu;
+  const mT = total*ISLAND_SHARE.maui;
+  const hT = total*ISLAND_SHARE.hawaii;
+  const kT = total*ISLAND_SHARE.kauai;
+  const oP = pieForYear('oahu', year);
+
+  // Oahu demand nodes
+  const oahuJetTotal = oT*oP.jetfuel;
+  const oahuJetCivil = oahuJetTotal*0.55;          // HNL commercial
+  const milJet       = oahuJetTotal*0.45;          // Hickam + Navy air
+  const milMarine    = oT*0.05;                    // Navy F-76 ship fuel (added military demand)
+  const jbphhV       = milJet + milMarine;
+  const jbphhImp     = jbphhV*0.55;                // DLA direct tanker import (Red Hill legacy)
+  const jbphhLocal   = jbphhV - jbphhImp;          // Kapolei product via O'ahu distribution
+  const oahuPwrV   = oT*oP.powerfuel;
+  const bunkerV    = oT*0.045;
+  const oahuGrdV   = oT*(oP.gasoline+oP.diesel+oP.other) - bunkerV*0.4;
+
+  // neighbor-island county totals + each island's own isolated grid (utility)
+  const mPie=pieForYear('maui',year), hPie=pieForYear('hawaii',year), kPie=pieForYear('kauai',year);
+  const mauiPwrV   = mT*mPie.powerfuel;   // MECO  (Maui Electric)
+  const hawaiiPwrV = hT*hPie.powerfuel;   // HELCO (Hawai'i Electric Light)
+  const kauaiPwrV  = kT*kPie.powerfuel;   // KIUC  (renewable-heavy -> small)
+
+  // terminal (non-power) demand landed at each harbor
+  const mauiV  = mT*0.86 - mauiPwrV;      // Maui island terminal (MECO split out)
+  const molokaiV = mT*0.08, lanaiV = mT*0.06;
+  const konaV  = hT*0.45 - hawaiiPwrV;    // HELCO fed via Kona/Kawaihae
+  const hiloV  = hT*0.55;
+  const kauaiV = kT - kauaiPwrV;
+
+  // barge volumes carry terminal + that island's power-gen fuel
+  const bMaui = mauiV + mauiPwrV, bKona = konaV + hawaiiPwrV, bKauai = kauaiV + kauaiPwrV;
+  const islandsBargeV = bKauai+bMaui+molokaiV+lanaiV+bKona+hiloV;
+  const oahuPipeOut = oahuJetCivil+oahuGrdV+oahuPwrV+bunkerV+jbphhLocal;
+  const oahuPipeThru = oahuPipeOut + islandsBargeV;
+
+  const importToPipe = oahuPipeThru*0.10;          // direct product top-up into O'ahu distribution
+  const renewV  = (year>=RENEW_COD ? oahuPipeThru*0.025 : 0);   // produced NOTHING before 2026
+  const refProdV= oahuPipeThru - importToPipe - renewV;
+  const crudeV  = refProdV/0.90;                   // crude in > product out
+  const prodImportV = importToPipe + jbphhImp;     // imports feed both the pipe and the base
+
+  nodeVol = {
+    crudeSPM:crudeV, prodImport:prodImportV, kapolei:refProdV, renewables:renewV,
+    oahuPipe:oahuPipeThru, oahuJet:oahuJetCivil, jbphh:jbphhV, oahuGround:oahuGrdV, oahuPower:oahuPwrV,
+    honoluluBunker:bunkerV, kauai:kauaiV, molokai:molokaiV, lanai:lanaiV, mauiCo:mauiV,
+    hawaiiKona:konaV, hawaiiHilo:hiloV,
+    mauiPower:mauiPwrV, hawaiiPower:hawaiiPwrV, kauaiPower:kauaiPwrV
+  };
+  linkVol = {
+    crude:crudeV, pimport:importToPipe, renew:renewV, refprod:refProdV,
+    o_jet:oahuJetCivil, o_mil:jbphhLocal, mil_imp:jbphhImp, o_grd:oahuGrdV, o_pwr:oahuPwrV, o_bnk:bunkerV,
+    b_kauai:bKauai, b_molo:molokaiV, b_lanai:lanaiV, b_maui:bMaui,
+    b_kona:bKona, b_hilo:hiloV,
+    m_pwr:mauiPwrV, h_pwr:hawaiiPwrV, k_pwr:kauaiPwrV
+  };
+  if(simScn){
+    for(const k in nodeVol)nodeVol[k]*=simFactor(k,simMonthF);
+    for(const k in linkVol)linkVol[k]*=simFactor(k,simMonthF);
+  }
+}
+
+// global max for sqrt normalization (across all years)
+let MAXLINK = 0, MAXNODE = 0;
+(function(){
+  for (let i=0;i<FISCAL_YEARS.length;i++){
+    buildFrame(FISCAL_YEARS[i]);
+    for (const k in linkVol) MAXLINK = Math.max(MAXLINK, linkVol[k]);
+    for (const k in nodeVol) MAXNODE = Math.max(MAXNODE, nodeVol[k]);
+  }
+})();
+const ECON_PATH=FISCAL_YEARS.map(y=>{buildFrame(y);
+  return {s:nodeVol.kapolei||0, d:statewideTotal(y)};});
+buildFrame(FISCAL_YEARS[yearIdx]);
+function sizeFrac(v, mx){ return Math.sqrt(Math.max(v,0)/mx); }   // sqrt sizing
+function ribbonW(v){ return 1.6 + sizeFrac(v,MAXLINK)*15; }
+function nodeR(v){ return 7 + sizeFrac(v,MAXNODE)*30; }
+
+// ---- vulnerability ----
+const VULN = {
+  crudeSPM:5.0, kapolei:4.8, oahuPower:4.5, oahuPipe:3.6, honoluluBunker:3.2,
+  mauiCo:4.3, molokai:4.3, lanai:4.3, hawaiiHilo:4.3, hawaiiKona:4.0,
+  kauai:3.8, oahuJet:4.0, prodImport:3.5,
+  mauiPower:4.5, hawaiiPower:4.5, kauaiPower:2.6, jbphh:4.2
+};
+const VULN_DETAIL = {
+  crudeSPM:{score:5.0, reason:"Entire state's crude enters one offshore mooring 1.5 mi out \u2014 storm, spill or outage = no crude statewide."},
+  kapolei:{score:4.8, reason:"Hawai\u02bbi's only refinery. A turnaround, fire or closure forces 100% finished-product imports."},
+  oahuPower:{score:4.5, reason:"~65% of 2024 electricity is oil-fired; a fuel disruption cascades straight into blackouts."},
+  oahuPipe:{score:3.6, reason:"The single O\u02bbahu distribution backbone \u2014 every neighbor-island barge loads from these terminals and pipelines; a terminal or pipeline outage here ripples to all four counties."},
+  honoluluBunker:{score:3.2, reason:"Marine bunkering and a slice of distillate move through Honolulu Harbor; a harbor or barge-ops disruption idles ship refueling and inter-island loading."},
+  mauiCo:{score:4.3, reason:"Single harbor + barge dependency; a Kahului closure strands Maui Co. within days."},
+  molokai:{score:4.3, reason:"Tiny, single-harbor demand; most barge-exposed of all."},
+  lanai:{score:4.3, reason:"Kaumalapau harbor is the only lifeline; no redundancy."},
+  hawaiiHilo:{score:4.3, reason:"East-side supply leans on one harbor; weather closures isolate Hilo."},
+  hawaiiKona:{score:4.0, reason:"West Hawai\u02bbi served via Kawaihae barge calls; limited backup."},
+  kauai:{score:3.8, reason:"N\u0101wiliwili dependency, though KIUC's renewable grid lowers power-fuel exposure."},
+  oahuJet:{score:4.0, reason:"HNL + military jet demand is concentrated and mission-critical; thin alternate supply."},
+  prodImport:{score:3.5, reason:"Backup path, but trans-Pacific lead times make it slow to lean on."},
+  mauiPower:{score:4.5, reason:"MECO's Maui grid is largely oil/diesel-fired and islanded; a fuel-supply break feeds straight into blackouts."},
+  hawaiiPower:{score:4.5, reason:"HELCO's Hawai\u02bbi Island grid still leans on oil/diesel; isolated, with no inter-island backup."},
+  kauaiPower:{score:2.6, reason:"KIUC is the most-renewable grid in the state, so oil-fuel exposure is comparatively low \u2014 but still islanded."},
+  jbphh:{score:4.2, reason:"Joint Base Pearl Harbor\u2013Hickam was fed by the Red Hill underground tanks (the DoD's largest fuel terminal) until the 2021 jet-fuel leak forced closure; defueled by March 2024, military supply now leans on the Upper Tank Farm, Campbell Industrial Park storage, barges and DLA tanker imports \u2014 concentrated and mission-critical."}
+};
+function vulnColor(s){ // amber -> red
+  const t = Math.min(Math.max((s-3)/2,0),1);
+  const r = Math.round(245 + (185-245)*t);
+  const g = Math.round(179 + (28-179)*t);
+  const b = Math.round(1 + (28-1)*t);
+  return 'rgb('+r+','+g+','+b+')';
+}
+
+// ---- island silhouettes (abstract, low-opacity backdrop) ----
+const ISLAND_BLOBS = [
+  {island:'kauai',  cx:352, cy:115, rx:52, ry:42, rot:0.2},
+  {island:'oahu',   cx:478, cy:470, rx:120,ry:92, rot:-0.35},
+  {island:'maui',   cx:702, cy:398, rx:54, ry:22, rot:0.05},   // molokai (elongated E-W)
+  {island:'maui',   cx:718, cy:456, rx:30, ry:24, rot:0.1},    // lanai
+  {island:'maui',   cx:812, cy:418, rx:74, ry:52, rot:0.2},    // maui
+  {island:'hawaii', cx:958, cy:548, rx:120,ry:108,rot:0.1}
+];
+const ISLAND_TINT = {oahu:'#ef4444', maui:'#f59e0b', hawaii:'#22c55e', kauai:'#3b82f6'};
+function drawBlobs(){
+  for (const b of ISLAND_BLOBS){
+    const active = activeIsland==='all' || activeIsland===b.island;
+    ctx.save();
+    ctx.translate(b.cx,b.cy); ctx.rotate(b.rot);
+    ctx.beginPath();
+    ctx.ellipse(0,0,b.rx,b.ry,0,0,Math.PI*2);
+    ctx.fillStyle = ISLAND_TINT[b.island];
+    ctx.globalAlpha = active?0.085:0.03;
+    ctx.fill();
+    ctx.globalAlpha = active?0.18:0.06;
+    ctx.lineWidth = 1.2; ctx.strokeStyle = ISLAND_TINT[b.island];
+    ctx.stroke();
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ---- bezier helpers ----
+function ctrlPts(a,b){
+  const dx = b.x-a.x;
+  // mostly horizontal flow; arc barges a touch
+  return [
+    {x:a.x+dx*0.42, y:a.y},
+    {x:a.x+dx*0.58, y:b.y}
+  ];
+}
+function bez(a,c1,c2,b,t){
+  const u=1-t;
+  const x=u*u*u*a.x+3*u*u*t*c1.x+3*u*t*t*c2.x+t*t*t*b.x;
+  const y=u*u*u*a.y+3*u*u*t*c1.y+3*u*t*t*c2.y+t*t*t*b.y;
+  return {x,y};
+}
+
+// ---- particles ----
+const particles = {};   // linkId -> [{t,sp}]
+LINKS.forEach(l=>particles[l.id]=[]);
+// one tiny barge per inter-island route, so the marine leg is unmistakable
+const barges = {};
+LINKS.forEach(l=>{ if(l.kind==='barge') barges[l.id]=Math.random(); });
+function desiredCount(v){ return Math.min(46, Math.round(sizeFrac(v,MAXLINK)*46)); }
+
+function linkActive(l){
+  if (activeIsland==='all') return true;
+  const tn = NODES[l.to], fn = NODES[l.from];
+  return tn.island===activeIsland || fn.island===activeIsland || tn.island==='both' || (l.kind==='crude');
+}
+function nodeActive(n){
+  if (activeIsland==='all') return true;
+  return n.island===activeIsland || n.island==='both';
+}
+
+// ---- drawing ----
+let tNow = 0;
+function drawRibbon(l){
+  if(l.minYear && FISCAL_YEARS[yearIdx] < l.minYear) return null;   // the line did not exist yet
+  const a=NODES[l.from], b=NODES[l.to];
+  const [c1,c2]=ctrlPts(a,b);
+  const w = ribbonW(linkVol[l.id]);
+  const act = linkActive(l);
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(a.x,a.y); ctx.bezierCurveTo(c1.x,c1.y,c2.x,c2.y,b.x,b.y);
+  ctx.lineCap='round';
+  ctx.lineWidth=w;
+  ctx.strokeStyle=l.color;
+  ctx.globalAlpha=act?0.22:0.05;
+  if (l.dashed){ ctx.setLineDash([3, w*1.4]); }
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+  return {a,c1,c2,b,w,act};
+}
+function drawParticles(l, geo){
+  const arr=particles[l.id];
+  const want=desiredCount(linkVol[l.id]);
+  while (arr.length<want) arr.push({t:Math.random(), sp:0.0003+Math.random()*0.0005});
+  while (arr.length>want) arr.pop();
+  const speedMul = playing?3.0:1.0;
+  ctx.save();
+  for (const p of arr){
+    p.t += p.sp*speedMul;
+    if (p.t>1) p.t-=1;
+    const pos=bez(geo.a,geo.c1,geo.c2,geo.b,p.t);
+    const r = Math.max(1.2, Math.min(2.3, geo.w*0.30));
+    const a = geo.act?(0.82+0.18*Math.sin((p.t+tNow*0.3)*Math.PI)):0.16;
+    ctx.fillStyle=l.color;
+    ctx.globalAlpha=a*0.22;
+    ctx.beginPath();ctx.arc(pos.x,pos.y,r*2.1,0,Math.PI*2);ctx.fill();   // faint halo
+    ctx.globalAlpha=a;
+    ctx.beginPath();ctx.arc(pos.x,pos.y,r,0,Math.PI*2);ctx.fill();       // crisp solid core
+  }
+  ctx.restore();
+}
+
+function drawBarge(x,y,ang,act){
+  const s=7, h=s*0.42;                 // tiny
+  ctx.save();
+  ctx.translate(x,y); ctx.rotate(ang);
+  if (Math.abs(ang)>Math.PI/2) ctx.scale(1,-1);   // keep deck up on leftward routes
+  ctx.globalAlpha=act?1:0.28;
+  // hull (side view, bow to +x)
+  ctx.beginPath();
+  ctx.moveTo(-s,-h); ctx.lineTo(s*0.55,-h); ctx.lineTo(s,0); ctx.lineTo(s*0.55,h); ctx.lineTo(-s,h); ctx.closePath();
+  ctx.fillStyle='#0a1d2e'; ctx.fill();
+  ctx.lineWidth=1.2; ctx.strokeStyle='#f59e0b'; ctx.stroke();
+  // cargo box on deck
+  ctx.fillStyle='#f59e0b';
+  ctx.fillRect(-s*0.55,-h-s*0.5,s*0.62,s*0.5);
+  ctx.restore();
+}
+function drawBargeOn(l, geo){
+  // family vessel convention: nothing sails through the wave; speed tracks the link's scenario factor
+  if (simScn==="hilo60" && simArmed && simMonthF<1.3) return;
+  const bf = simScn ? simFactor(l.id, simMonthF) : 1;
+  if (bf<=0.05) return;
+  let t = barges[l.id] + 0.0009*(playing?1.6:0.4)*bf;
+  if (t>1) t-=1;
+  barges[l.id]=t;
+  const p=bez(geo.a,geo.c1,geo.c2,geo.b,t);
+  const p2=bez(geo.a,geo.c1,geo.c2,geo.b,Math.min(t+0.012,1));
+  drawBarge(p.x,p.y,Math.atan2(p2.y-p.y,p2.x-p.x),geo.act);
+}
+
+function nodeExtent(n,r){
+  if(n.flag) return {up:r*0.7, side:r*0.9};
+  switch(n.shape){
+    case 'refinery': return {up:r*1.55, side:r*0.7};
+    case 'junction': return {up:r*1.05, side:r*1.05};
+    case 'terminal': return {up:r*1.15, side:r};
+    case 'pipe':     return {up:r*0.5,  side:r*1.7};
+    case 'tanker':   return {up:r*0.8,  side:r*1.5};
+    case 'plane':    return {up:r*1.1,  side:r};
+    case 'bolt':     return {up:r*1.05, side:r*0.6};
+    case 'anchor':   return {up:r*0.96, side:r*0.66};
+    default:         return {up:r, side:r};
+  }
+}
+// SW-map shape vocabulary (gradient-filled geometric forms in node color),
+// ported from fuel-flow-map.html. plane/bolt/anchor kept in the same filled style.
+function drawShape(n,r,act){
+  const x=n.x,y=n.y,c=n.color,P=Math.PI;
+  ctx.save();
+  ctx.globalAlpha=act?1:0.3;
+  ctx.lineWidth=1.5; ctx.strokeStyle=c; ctx.lineJoin='round'; ctx.lineCap='round';
+  if(n.flag){
+    const rr=r*1.15;
+    const TL={x:x-rr*0.866,y:y-rr*0.5}, TR={x:x+rr*0.866,y:y-rr*0.5}, AP={x:x,y:y+rr};
+    const tri=()=>{ ctx.beginPath(); ctx.moveTo(TL.x,TL.y); ctx.lineTo(TR.x,TR.y); ctx.lineTo(AP.x,AP.y); ctx.closePath(); };
+    ctx.save(); tri(); ctx.clip();
+    const left=TL.x, top=TL.y, w=rr*1.732, h=rr*1.5, stripes=7, sh=h/stripes;
+    for(let i=0;i<stripes;i++){ ctx.fillStyle=(i%2===0)?'#b22234':'#f2ede1'; ctx.fillRect(left-1,top+i*sh,w+2,sh+0.6); }
+    const cw=w*0.42, ch=sh*4; ctx.fillStyle='#3c3b6e'; ctx.fillRect(left,top,cw,ch);
+    ctx.fillStyle='#ffffff'; const sr=Math.max(0.6,rr*0.05);
+    for(let ri=0;ri<3;ri++) for(let ci=0;ci<4;ci++){ ctx.beginPath(); ctx.arc(left+cw*(0.16+ci*0.23), top+ch*(0.2+ri*0.3), sr,0,P*2); ctx.fill(); }
+    ctx.restore();
+    tri(); ctx.lineWidth=1.5; ctx.strokeStyle=act?'#cdd6e0':c; ctx.stroke();
+    ctx.restore(); return;
+  }
+  switch(n.shape){
+    case 'circle':{
+      ctx.beginPath(); ctx.arc(x,y,r,0,P*2);
+      const g=ctx.createRadialGradient(x,y,0,x,y,r);
+      g.addColorStop(0,c+'cc'); g.addColorStop(1,c+'33');
+      ctx.fillStyle=g; ctx.fill(); ctx.stroke(); break;
+    }
+    case 'refinery':{                       // family glyph: distillation towers (ported from siblings)
+      const s=r*0.95, yb=y+s*0.5;
+      ctx.fillStyle="rgba(22,12,30,0.9)"; ctx.strokeStyle=c; ctx.lineWidth=1.4;
+      ctx.beginPath(); ctx.roundRect(x-s, yb, s*2, s*0.6, 2); ctx.fill(); ctx.stroke();
+      [[-s*0.6,s*1.5],[0,s*1.95],[s*0.55,s*1.2]].forEach(([cx,ch])=>{
+        const cw=s*0.32;
+        ctx.fillStyle=c+'33'; ctx.strokeStyle=c; ctx.lineWidth=1.1;
+        ctx.beginPath();
+        ctx.moveTo(x+cx-cw, yb);
+        ctx.lineTo(x+cx-cw, yb-ch+cw);
+        ctx.arc(x+cx, yb-ch+cw, cw, Math.PI, 0);
+        ctx.lineTo(x+cx+cw, yb);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+      });
+      break;
+    }
+    case 'junction':{
+      const rr=r*1.05;
+      ctx.beginPath(); ctx.moveTo(x,y-rr);ctx.lineTo(x+rr,y);ctx.lineTo(x,y+rr);ctx.lineTo(x-rr,y);ctx.closePath();
+      const g=ctx.createRadialGradient(x,y,0,x,y,rr);
+      g.addColorStop(0,c+'cc'); g.addColorStop(1,c+'33');
+      ctx.fillStyle=g; ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x,y-rr*0.5);ctx.lineTo(x+rr*0.5,y);ctx.lineTo(x,y+rr*0.5);ctx.lineTo(x-rr*0.5,y);ctx.closePath();
+      ctx.strokeStyle=c+'44'; ctx.lineWidth=0.5; ctx.stroke();
+      break;
+    }
+    case 'terminal':{                       // family glyph: upward triangle w/ dark interior + storage tank
+      const rr=r*1.2, topY=y-rr, baseY=y+rr*0.5, hw=rr*0.866;
+      ctx.beginPath(); ctx.moveTo(x,topY);ctx.lineTo(x+hw,baseY);ctx.lineTo(x-hw,baseY);ctx.closePath();
+      ctx.fillStyle="rgba(18,13,4,0.92)"; ctx.fill(); ctx.strokeStyle=c; ctx.lineWidth=1.6; ctx.stroke();
+      const tw=rr*0.8, th=rr*0.5, tcx=x, tcy=baseY-th*0.6;
+      ctx.lineWidth=1.2; ctx.strokeStyle=c;
+      ctx.beginPath(); ctx.moveTo(tcx-tw/2,tcy-th/2);ctx.lineTo(tcx-tw/2,tcy+th/2);ctx.lineTo(tcx+tw/2,tcy+th/2);ctx.lineTo(tcx+tw/2,tcy-th/2); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(tcx,tcy-th/2,tw/2,th*0.18,0,0,Math.PI*2); ctx.stroke();
+      ctx.fillStyle=c+"66"; ctx.fillRect(tcx-tw/2+0.7,tcy-th*0.06,tw-1.4,th*0.52);
+      break;
+    }
+    case 'pipe':{
+      const w=r*1.7,h=r*0.5,rx=h;
+      ctx.beginPath();
+      ctx.moveTo(x-w+rx,y-h); ctx.lineTo(x+w-rx,y-h);
+      ctx.arcTo(x+w,y-h,x+w,y,rx); ctx.arcTo(x+w,y+h,x+w-rx,y+h,rx);
+      ctx.lineTo(x-w+rx,y+h); ctx.arcTo(x-w,y+h,x-w,y,rx); ctx.arcTo(x-w,y-h,x-w+rx,y-h,rx); ctx.closePath();
+      const g=ctx.createLinearGradient(x-w,y,x+w,y);
+      g.addColorStop(0,c+'55'); g.addColorStop(0.5,c+'cc'); g.addColorStop(1,c+'55');
+      ctx.fillStyle=g; ctx.fill(); ctx.stroke();
+      break;
+    }
+    case 'tanker':{
+      const hw=r*1.5,bw=r*1.05,h=r*0.8;
+      ctx.beginPath(); ctx.moveTo(x-hw,y-h);ctx.lineTo(x+hw,y-h);ctx.lineTo(x+bw,y+h);ctx.lineTo(x-bw,y+h);ctx.closePath();
+      const g=ctx.createLinearGradient(x,y-h,x,y+h);
+      g.addColorStop(0,c+'dd'); g.addColorStop(1,c+'44');
+      ctx.fillStyle=g; ctx.fill(); ctx.stroke();
+      ctx.strokeStyle=c+'55'; ctx.lineWidth=0.5;
+      ctx.beginPath(); ctx.moveTo(x-hw*0.6,y-h+3); ctx.lineTo(x+hw*0.6,y-h+3); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x-hw*0.32,y-h+6); ctx.lineTo(x+hw*0.32,y-h+6); ctx.stroke();
+      break;
+    }
+    case 'plane':{
+      const s=r*1.0, oy=y-s*0.1;
+      const g=ctx.createRadialGradient(x,oy,0,x,oy,s*1.25);
+      g.addColorStop(0,c+'cc'); g.addColorStop(1,c+'33'); ctx.fillStyle=g;
+      ctx.beginPath();
+      ctx.moveTo(x,oy-s);
+      ctx.lineTo(x+s*0.14,oy-s*0.1); ctx.lineTo(x+s,oy+s*0.22); ctx.lineTo(x+s,oy+s*0.4);
+      ctx.lineTo(x+s*0.14,oy+s*0.32); ctx.lineTo(x+s*0.2,oy+s*0.78); ctx.lineTo(x+s*0.5,oy+s*0.95);
+      ctx.lineTo(x+s*0.5,oy+s*1.1); ctx.lineTo(x,oy+s*0.96); ctx.lineTo(x-s*0.5,oy+s*1.1);
+      ctx.lineTo(x-s*0.5,oy+s*0.95); ctx.lineTo(x-s*0.2,oy+s*0.78); ctx.lineTo(x-s*0.14,oy+s*0.32);
+      ctx.lineTo(x-s,oy+s*0.4); ctx.lineTo(x-s,oy+s*0.22); ctx.lineTo(x-s*0.14,oy-s*0.1);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      break;
+    }
+    case 'bolt':{
+      const s=r*1.05;
+      const g=ctx.createLinearGradient(x-s,y-s,x+s,y+s);
+      g.addColorStop(0,c+'dd'); g.addColorStop(1,c+'44'); ctx.fillStyle=g;
+      ctx.beginPath();
+      ctx.moveTo(x+s*0.2,y-s); ctx.lineTo(x-s*0.5,y+s*0.18); ctx.lineTo(x-s*0.02,y+s*0.18);
+      ctx.lineTo(x-s*0.2,y+s); ctx.lineTo(x+s*0.55,y-s*0.18); ctx.lineTo(x+s*0.06,y-s*0.18);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      break;
+    }
+    case 'anchor':{
+      const s=r*0.95; ctx.lineWidth=Math.max(1.6,s*0.2);
+      ctx.beginPath(); ctx.arc(x,y-s*0.7,s*0.26,0,P*2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x,y-s*0.44); ctx.lineTo(x,y+s*0.78); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x-s*0.46,y+s*0.02); ctx.lineTo(x+s*0.46,y+s*0.02); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x-s*0.66,y+s*0.32); ctx.quadraticCurveTo(x-s*0.54,y+s*0.86,x,y+s*0.82);
+      ctx.moveTo(x+s*0.66,y+s*0.32); ctx.quadraticCurveTo(x+s*0.54,y+s*0.86,x,y+s*0.82); ctx.stroke();
+      break;
+    }
+    default:{
+      ctx.beginPath(); ctx.arc(x,y,r,0,P*2);
+      ctx.fillStyle=c+'88'; ctx.fill(); ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+function fmtVol(v){ return v>=1000 ? (v/1000).toFixed(2)+'B gal' : Math.round(v)+'M gal'; }
+function downExtent(n,r){
+  if(n.flag) return r*1.2;
+  switch(n.shape){
+    case 'refinery': return r*1.55;
+    case 'terminal': return r*0.6;
+    case 'tanker':   return r*0.8;
+    case 'plane':    return r*1.0;
+    case 'bolt':     return r*1.05;
+    case 'junction': return r*1.05;
+    case 'anchor':   return r*0.8;
+    default:         return r;
+  }
+}
+// era-representative import source mix (HSEO Fuel Imports Dashboard / EIA);
+// shifts with the year instead of being frozen
+function crudeMix(year){
+  return (year<=2015)
+    ? ["Russia 24%","Indonesia 23%","Saudi 23%","Alaska 9%"]
+    : ["Argentina 60%","Libya 14%","Alaska 10%","Nigeria 8%"];
+}
+function productMix(year){
+  return (year<=2017)
+    ? ["South Korea 55%","Japan 30%","Cont. US 10%","Other 5%"]
+    : ["South Korea 90%","Japan 3%","Taiwan 2%","Cont. US 2%"];
+}
+
+// Two refineries until 2018, one after. Chevron's Kapolei plant (54k b/d) passed to Island Energy
+// Services in 2016 and STOPPED REFINING in 2018, becoming an import terminal — leaving Par's 94k b/d
+// unit as the only refinery in the state. The map's own scenario text always said so; the node did not.
+const IES_CONVERSION = 2018;
+function refineryRole(yr){
+  return yr < IES_CONVERSION
+    ? "Par 94k + Chevron/IES 54k b/d \u00b7 two refineries"
+    : "Par East 94k b/d \u00b7 the state\u2019s only refinery";
+}
+function drawNode(key){
+  if(key==='kapolei') NODES.kapolei.role = refineryRole(FISCAL_YEARS[yearIdx]);   // two plants, then one
+  if(key==='renewables'){
+    const _yr=FISCAL_YEARS[yearIdx];
+    if(_yr < RENEW_ANNOUNCED) return;                  // it did not exist
+    if(_yr < RENEW_COD){                               // announced, under construction: steel, not fuel
+      const n=NODES[key];
+      ctx.save();
+      ctx.setLineDash([4,4]); ctx.lineWidth=1.6; ctx.strokeStyle='#6f8f4a';
+      ctx.beginPath(); ctx.arc(n.x,n.y,13,0,Math.PI*2); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle='#8fb163'; ctx.font='600 12px Archivo, sans-serif'; ctx.textAlign='center';
+      ctx.fillText('Renewable fuels unit', n.x, n.y-20);
+      ctx.fillStyle='#7d8f6a'; ctx.font='italic 11px Archivo, sans-serif';
+      ctx.fillText('under construction \u00b7 online 2026', n.x, n.y+27);
+      ctx.restore(); ctx.textAlign='left';
+      return;
+    }
+  }
+  const n=NODES[key];
+  const r=nodeR(nodeVol[key]);
+  const act=nodeActive(n);
+  // SW-style node shape (no glow halo, matching the SW/Gulf maps)
+  drawShape(n, r, act);
+
+  const ext=nodeExtent(n,r);
+  const down=downExtent(n,r);
+  const yr=FISCAL_YEARS[yearIdx];
+
+  // volume readout (per year, with units) like the SW map
+  ctx.save();
+  ctx.globalAlpha=act?0.92:0.28;
+  ctx.fillStyle=n.color;
+  ctx.font='600 10px "Spline Sans Mono", monospace';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  let yy = n.y + down + 13;
+  ctx.fillText(fmtVol(nodeVol[key]), n.x, yy);
+  yy += 13;
+
+  // import source mix underneath (dynamic by era)
+  let countries = key==='crudeSPM' ? crudeMix(yr) : key==='prodImport' ? productMix(yr) : null;
+  if (countries){
+    ctx.globalAlpha=act?0.8:0.22;
+    ctx.font='600 9px "Spline Sans Mono", monospace';
+    countries.forEach((cstr,i)=>{ ctx.fillText(cstr, n.x, yy + i*12); });
+  }
+  ctx.restore();
+
+  // name label, offset by the shape's extent
+  ctx.save();
+  ctx.globalAlpha=act?0.92:0.3;
+  ctx.fillStyle='#f2ede1';
+  ctx.font='600 12px Archivo, sans-serif';
+  const side = (key==='kauai'||key==='molokai'||key==='renewables'||key==='oahuJet'||key==='jbphh'||key==='kapolei') ? 'top'
+             : (n.x>900?'left':'right');
+  ctx.textBaseline='middle';
+  if (side==='top'){ ctx.textAlign='center'; ctx.fillText(n.label, n.x, n.y-ext.up-11); }
+  else if (side==='left'){ ctx.textAlign='right'; ctx.fillText(n.label, n.x-ext.side-9, n.y); }
+  else { ctx.textAlign='left'; ctx.fillText(n.label, n.x+ext.side+9, n.y); }
+  ctx.restore();
+}
+
+function drawVulnRing(key){
+  if (!VULN[key]) return;
+  const n=NODES[key];
+  if (!nodeActive(n)) return;
+  const base=nodeR(nodeVol[key]);
+  const score=VULN[key];
+  const col=vulnColor(score);
+  for (let i=0;i<3;i++){
+    const phase=(tNow*0.4 + i/3)%1;
+    const rr=base+8 + phase*(18+score*6);
+    ctx.beginPath();
+    ctx.arc(n.x,n.y,rr,0,Math.PI*2);
+    ctx.strokeStyle=col;
+    ctx.globalAlpha=(1-phase)*0.5*(0.6+score/8);
+    ctx.lineWidth=1.5+score*0.4;
+    ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+}
+
+const HIFLAG={x:14,y:14,w:84,h:42};
+let oceanT={crude:0.15,prod:0.6};
+function drawTankerHull(x,y,ang,act,s,col){
+  col=col||'#f59e0b';
+  const h=s*0.38;
+  ctx.save();
+  ctx.translate(x,y); ctx.rotate(ang);
+  if (Math.abs(ang)>Math.PI/2) ctx.scale(1,-1);
+  ctx.globalAlpha=act?1:0.28;
+  // long tanker hull, bow to +x
+  ctx.beginPath();
+  ctx.moveTo(-s,-h); ctx.lineTo(s*0.72,-h); ctx.lineTo(s,0); ctx.lineTo(s*0.72,h); ctx.lineTo(-s,h); ctx.closePath();
+  ctx.fillStyle='#0a1320'; ctx.fill();
+  ctx.lineWidth=1.2; ctx.strokeStyle=col; ctx.stroke();
+  // stern superstructure (what makes it a tanker, not a barge)
+  ctx.fillStyle=col;
+  ctx.fillRect(-s*0.92,-h-s*0.42,s*0.34,s*0.42);
+  // deck pipeline ridge
+  ctx.strokeStyle=col+'88'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(-s*0.45,-h+1.5); ctx.lineTo(s*0.55,-h+1.5); ctx.stroke();
+  ctx.restore();
+}
+function drawChannelShip(x,y,ang,act,col){
+  // PNW coastal-channel ship() glyph, ported verbatim: long low side-profile hull + raised stern bridge house
+  col=col||"#e0962a";
+  ctx.save(); ctx.globalAlpha=act?0.95:0.28; ctx.translate(x,y); ctx.rotate(ang);
+  if(Math.abs(ang)>Math.PI/2) ctx.scale(1,-1);  // keep the bridge upright on leftbound lanes (family flip idiom)
+  ctx.beginPath(); ctx.moveTo(-18,-3); ctx.lineTo(18,-3); ctx.lineTo(14,3); ctx.lineTo(-14,3); ctx.closePath();
+  ctx.fillStyle="#0a1320"; ctx.fill(); ctx.lineWidth=1.2; ctx.strokeStyle=col; ctx.stroke();
+  ctx.beginPath(); ctx.rect(-16,-9,7,6);
+  ctx.fillStyle="#0a1320"; ctx.fill(); ctx.strokeStyle=col; ctx.stroke();
+  ctx.restore();
+}
+function drawOceanTankers(){
+  // the outside link: tankers standing in from the west \u2014 crude to the SPM, product to the terminal
+  if (simScn==="hilo60" && simArmed && simMonthF<1.3) return;  // nothing sails through the wave
+  const lanes=[
+    {key:'crude', pts:[{x:-18,y:318},{x:50,y:372}], dst:'crudeSPM', lab:null, sp:0.0011, col:'#378add'},
+    {key:'prod',  pts:[{x:1158,y:694},{x:170,y:694},{x:48,y:556}], dst:'prodImport',
+      lab:'\u2190 product tankers from the mainland \u00b7 2,400 mi of open ocean', sp:0.00055, col:'#f59e0b'}
+  ];
+  lanes.forEach(L=>{
+    const f=simScn&&simArmed?simFactor(L.dst,simMonthF):1;
+    if(f<=0.05)return;
+    const n=NODES[L.dst];
+    const act=(activeIsland==='all'||n.island===activeIsland||n.island==='both');
+    let t=oceanT[L.key]+L.sp*(playing?1.6:0.4)*Math.min(1.4,f);
+    if(t>1)t-=1;
+    oceanT[L.key]=t;
+    // piecewise path, constant speed by arc length
+    const segs=[];let total=0;
+    for(let i=0;i<L.pts.length-1;i++){
+      const len=Math.hypot(L.pts[i+1].x-L.pts[i].x,L.pts[i+1].y-L.pts[i].y);
+      segs.push({a:L.pts[i],b:L.pts[i+1],len});total+=len;
+    }
+    let d=t*total,x,y,ang;
+    for(const s of segs){
+      if(d<=s.len||s===segs[segs.length-1]){
+        const u=Math.min(1,d/s.len);
+        x=s.a.x+(s.b.x-s.a.x)*u; y=s.a.y+(s.b.y-s.a.y)*u;
+        ang=Math.atan2(s.b.y-s.a.y,s.b.x-s.a.x);
+        break;
+      }
+      d-=s.len;
+    }
+    drawChannelShip(x,y,ang,act,L.col);
+    if(L.lab){
+      ctx.save();ctx.globalAlpha=act?0.55:0.14;
+      ctx.fillStyle='#bfa776';ctx.font='italic 8px Georgia, serif';ctx.textAlign='right';
+      ctx.fillText(L.lab,1132,682);
+      ctx.restore();
+    }
+  });
+}
+function drawHiFlag(){
+  const {x,y,w,h}=HIFLAG, sh=h/8;
+  ctx.save();ctx.globalAlpha=0.92;
+  const cols=["#f4f0e6","#c8403a","#2b4d9b","#f4f0e6","#c8403a","#2b4d9b","#f4f0e6","#c8403a"];
+  cols.forEach((c,i)=>{ctx.fillStyle=c;ctx.fillRect(x,y+i*sh,w,sh);});
+  const cw=w*0.46, ch=sh*4;
+  ctx.fillStyle="#2b4d9b";ctx.fillRect(x,y,cw,ch);
+  ctx.save();ctx.beginPath();ctx.rect(x,y,cw,ch);ctx.clip();
+  ctx.strokeStyle="#f4f0e6";ctx.lineWidth=4.5;
+  ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+cw,y+ch);ctx.moveTo(x+cw,y);ctx.lineTo(x,y+ch);ctx.stroke();
+  ctx.strokeStyle="#c8403a";ctx.lineWidth=1.8;
+  ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+cw,y+ch);ctx.moveTo(x+cw,y);ctx.lineTo(x,y+ch);ctx.stroke();
+  ctx.strokeStyle="#f4f0e6";ctx.lineWidth=6.5;
+  ctx.beginPath();ctx.moveTo(x+cw/2,y);ctx.lineTo(x+cw/2,y+ch);ctx.moveTo(x,y+ch/2);ctx.lineTo(x+cw,y+ch/2);ctx.stroke();
+  ctx.strokeStyle="#c8403a";ctx.lineWidth=3.2;
+  ctx.beginPath();ctx.moveTo(x+cw/2,y);ctx.lineTo(x+cw/2,y+ch);ctx.moveTo(x,y+ch/2);ctx.lineTo(x+cw,y+ch/2);ctx.stroke();
+  ctx.restore();
+  ctx.globalAlpha=0.7;ctx.strokeStyle="#0a0c12";ctx.lineWidth=1.2;ctx.strokeRect(x,y,w,h);
+  ctx.restore();
+}
+function _clampZoom(){ if(zoom<1)zoom=1; if(zoom>4)zoom=4; if(zoom<=1){panX=0;panY=0;} else { panX=Math.min(0,Math.max(W*(1-zoom),panX)); panY=Math.min(0,Math.max(H*(1-zoom),panY)); } }
+function _zoomAt(px,py,f){ const nz=Math.min(4,Math.max(1,zoom*f)),rr=nz/zoom; panX=px-(px-panX)*rr; panY=py-(py-panY)*rr; zoom=nz; _clampZoom(); }
+function _pin(d){ ctx.save(); ctx.setTransform(_DPR,0,0,_DPR,0,0); d(); ctx.restore(); }
+function _evXY(e){ const r=cv.getBoundingClientRect(),s=W/r.width; return [(e.clientX-r.left)*s,(e.clientY-r.top)*s]; }
+function render(){
+  ctx.setTransform(_DPR,0,0,_DPR,0,0);
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle="#07080d";ctx.fillRect(0,0,W,H);   // dark canvas floor (crispness — match PNW/SW)
+  if(simShake>0){
+    const shA=simShakeAmp*(simShake/95);
+    cv.style.transform="translate("+((Math.random()-0.5)*2*shA).toFixed(1)+"px,"+((Math.random()-0.5)*2*shA).toFixed(1)+"px)";
+    simShake--;
+  } else if(cv.style.transform){cv.style.transform="";}
+  ctx.save(); ctx.translate(panX,panY); ctx.scale(zoom,zoom);   // ZOOM pass (geo lens forces zoom=1)
+  drawBlobs();
+  drawHiFlag();
+  // ribbons under, particles over
+  const geos={};
+  LINKS.forEach(l=>{ geos[l.id]=drawRibbon(l); });
+  LINKS.forEach(l=>{ if(geos[l.id]) drawParticles(l, geos[l.id]); });
+  LINKS.forEach(l=>{ if(l.kind==='barge' && geos[l.id]) drawBargeOn(l, geos[l.id]); });
+  Object.keys(NODES).forEach(drawNode);
+  drawOceanTankers();
+  if (showVuln) Object.keys(NODES).forEach(drawVulnRing);
+  if(simScn&&simArmed)drawScenFX();
+  if(simScn){
+    Object.keys(NODES).forEach(k=>{
+      const f=simFactor(k,simMonthF);
+      if(Math.abs(f-1)<0.01)return;
+      const n=NODES[k];
+      if(f<=0){
+        ctx.save();ctx.globalAlpha=0.55;ctx.fillStyle="#4b5563";
+        ctx.beginPath();ctx.arc(n.x,n.y,14,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=0.95;ctx.strokeStyle="#ef4444";ctx.lineWidth=2.5;ctx.lineCap="round";
+        ctx.beginPath();ctx.moveTo(n.x-8,n.y-8);ctx.lineTo(n.x+8,n.y+8);
+        ctx.moveTo(n.x+8,n.y-8);ctx.lineTo(n.x-8,n.y+8);ctx.stroke();ctx.restore();
+      } else if(f<1){
+        const pr=16+Math.sin(tNow*5)*3;
+        ctx.strokeStyle="rgba(248,113,113,"+(0.2+0.6*(1-f)).toFixed(2)+")";ctx.lineWidth=2;
+        ctx.beginPath();ctx.arc(n.x,n.y,pr,0,Math.PI*2);ctx.stroke();
+        ctx.fillStyle="#f87171";ctx.font="bold 9px monospace";ctx.textAlign="left";
+        ctx.fillText(Math.round(f*100)+"%",n.x+20,n.y+3);
+      } else {
+        const cap=RESCUE[simScn]?RESCUE[simScn][k]:undefined;
+        if(cap!==undefined){
+          const pr=15+Math.sin(tNow*7)*4;
+          ctx.strokeStyle="rgba(34,197,94,"+(0.5+0.35*Math.sin(tNow*7)).toFixed(2)+")";ctx.lineWidth=2.5;
+          ctx.beginPath();ctx.arc(n.x,n.y,pr,0,Math.PI*2);ctx.stroke();
+          ctx.strokeStyle="rgba(34,197,94,0.25)";ctx.lineWidth=1.5;
+          ctx.beginPath();ctx.arc(n.x,n.y,pr+7,0,Math.PI*2);ctx.stroke();
+          ctx.fillStyle="#22c55e";ctx.font="bold 9px monospace";ctx.textAlign="left";
+          ctx.fillText(Math.round(f*100)+"%",n.x+24,n.y+3);
+          if(cap){ctx.textAlign="center";ctx.font="bold 8px monospace";ctx.fillText(cap,n.x,n.y+32);}
+        } else {
+          ctx.strokeStyle="rgba(251,191,36,0.55)";ctx.lineWidth=2;
+          ctx.beginPath();ctx.arc(n.x,n.y,17,0,Math.PI*2);ctx.stroke();
+          ctx.fillStyle="#fbbf24";ctx.font="bold 9px monospace";ctx.textAlign="left";
+          ctx.fillText(Math.round(f*100)+"%",n.x+20,n.y+3);
+        }
+      }
+    });
+  }
+  ctx.restore();   // end ZOOM pass — geo lens + econ panels draw pinned
+  if(geoView){ ctx.save(); ctx.fillStyle="rgba(8,4,2,0.90)"; ctx.fillRect(0,0,W,H); drawGeoLayer(); ctx.restore(); }
+  else if(econShow)drawEconPanels();
+}
+function fireFX(fx,fy,t,dur,scale,label){
+  if(t>=dur)return;
+  const ft=t/dur, env=ft<0.7?1:Math.max(0,1-(ft-0.7)/0.3);
+  if(t<0.25){
+    const a0=1-t/0.25, r=(6+t*200)*scale;
+    const g=ctx.createRadialGradient(fx,fy,0,fx,fy,r);
+    g.addColorStop(0,"rgba(255,240,180,"+(0.95*a0).toFixed(2)+")");
+    g.addColorStop(0.4,"rgba(255,120,30,"+(0.8*a0).toFixed(2)+")");
+    g.addColorStop(1,"rgba(220,30,10,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(fx,fy,r,0,Math.PI*2);ctx.fill();
+  }
+  const gl=ctx.createRadialGradient(fx,fy,2,fx,fy,34*scale);
+  gl.addColorStop(0,"rgba(255,140,40,"+(0.22*env).toFixed(2)+")");
+  gl.addColorStop(1,"rgba(255,80,20,0)");
+  ctx.fillStyle=gl;ctx.beginPath();ctx.arc(fx,fy,34*scale,0,Math.PI*2);ctx.fill();
+  for(let i=0;i<8;i++){
+    const ox=(Math.random()-0.5)*18*scale, h=(8+Math.random()*16)*env*scale, w2=(3+Math.random()*4)*scale;
+    const gx2=fx+ox, base=fy+5;
+    const fg=ctx.createLinearGradient(gx2,base,gx2,base-h);
+    fg.addColorStop(0,"rgba(220,40,10,"+(0.75*env).toFixed(2)+")");
+    fg.addColorStop(0.6,"rgba(255,130,20,"+(0.7*env).toFixed(2)+")");
+    fg.addColorStop(1,"rgba(255,235,150,"+(0.55*env).toFixed(2)+")");
+    ctx.fillStyle=fg;
+    ctx.beginPath();ctx.moveTo(gx2-w2,base);
+    ctx.quadraticCurveTo(gx2-w2*0.4,base-h*0.55,gx2,base-h);
+    ctx.quadraticCurveTo(gx2+w2*0.4,base-h*0.55,gx2+w2,base);
+    ctx.closePath();ctx.fill();
+  }
+  for(let i=0;i<6;i++){
+    const ph=(tNow*0.6+i*0.37)%1;
+    const ex=fx+Math.sin(i*7.3+tNow)*12*scale, ey=fy-ph*46*scale;
+    ctx.fillStyle="rgba(255,170,60,"+((1-ph)*0.6*env).toFixed(2)+")";
+    ctx.beginPath();ctx.arc(ex,ey,1.3,0,Math.PI*2);ctx.fill();
+  }
+  if(label){ctx.fillStyle="rgba(255,170,80,"+(0.85*env).toFixed(2)+")";
+    ctx.font="bold 9px monospace";ctx.textAlign="center";
+    ctx.fillText(label,fx,fy+30*scale);}
+}
+function drawScenFX(){
+  const t=simMonthF;
+  if(simScn==="maui23")fireFX(770,402,t,2.2,1.1,"LAHAINA");
+  if(simScn==="kilauea18"){
+    // Kīlauea Lower Puna eruption — PNW St. Helens (helens80) routine ported; plume mirrored WEST into open ocean (Lower Puna sits in the SE corner)
+    const vx=1052,vy=600;
+    const a=Math.min(320,t*40);                    // HI month clock -> PNW simAsh sweep
+    const env=a/320<0.65?1:Math.max(0,1-((a/320)-0.65)/0.35);
+    const front=vx-(vx-30)*Math.min(1,(a/320)*1.7);
+    const ch=40+95*Math.min(1,a/45);
+    const cg=ctx.createLinearGradient(vx,vy,vx,vy-ch);
+    cg.addColorStop(0,"rgba(125,105,92,"+(0.55*env).toFixed(2)+")");
+    cg.addColorStop(1,"rgba(95,85,78,0)");
+    ctx.fillStyle=cg;
+    ctx.beginPath();ctx.moveTo(vx-6,vy);ctx.lineTo(vx-22,vy-ch);ctx.lineTo(vx+22,vy-ch);ctx.lineTo(vx+6,vy);ctx.closePath();ctx.fill();
+    ctx.fillStyle="rgba(90,80,75,"+(0.8*env).toFixed(2)+")";
+    ctx.beginPath();ctx.moveTo(vx-14,vy+8);ctx.lineTo(vx,vy-8);ctx.lineTo(vx+14,vy+8);ctx.closePath();ctx.fill();
+    ctx.fillStyle="rgba(255,110,30,"+(0.7*env*(a<60?1:0.3)).toFixed(2)+")";
+    ctx.beginPath();ctx.arc(vx,vy-7,3,0,Math.PI*2);ctx.fill();
+    for(let i=0;i<52;i++){
+      const h1=Math.sin(i*127.1)*43758.5,r1=h1-Math.floor(h1);
+      const h2=Math.sin(i*311.7)*12543.2,r2=h2-Math.floor(h2);
+      const px=vx-(vx-20)*r1;
+      if(px<front)continue;
+      const spread=16+(vx-px)*0.17;
+      const py=vy-ch*0.85+(r2-0.5)*2*spread+Math.sin(tNow*6+i)*3;
+      const pr=9+spread*0.45*r2;
+      const fade=Math.max(0.04,0.17*env*(1-(vx-px)/(vx-20))+0.04);
+      ctx.fillStyle="rgba(110,98,90,"+fade.toFixed(3)+")";
+      ctx.beginPath();ctx.arc(px,py,pr,0,Math.PI*2);ctx.fill();
+    }
+    // scenario banner now lives in the #sim-note element, pinned to the top of the map (HTML overlay)
+  }
+  if(simScn==="iniki92"&&t<1.7){
+    const p=Math.min(1,t/1.1);
+    const hx=390+(355-390)*p, hy=735+(112-735)*p;
+    const env=t<1.1?1:Math.max(0,(1.7-t)/0.6);
+    ctx.save();ctx.globalAlpha=0.85*env;
+    const rg=ctx.createRadialGradient(hx,hy,4,hx,hy,62);
+    rg.addColorStop(0,"rgba(125,180,235,0.30)");rg.addColorStop(1,"rgba(125,180,235,0)");
+    ctx.fillStyle=rg;ctx.beginPath();ctx.arc(hx,hy,62,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#cfe6ff";ctx.lineWidth=2.4;
+    for(let arm=0;arm<3;arm++){
+      ctx.beginPath();
+      for(let aa=0;aa<2.0;aa+=0.12){
+        const ang=arm*2.094+aa*2.4-tNow*3.6;
+        const rr=5+aa*11;
+        const ppx=hx+Math.cos(ang)*rr,ppy=hy+Math.sin(ang)*rr;
+        aa===0?ctx.moveTo(ppx,ppy):ctx.lineTo(ppx,ppy);
+      }
+      ctx.stroke();
+    }
+    ctx.fillStyle="#0a1320";ctx.beginPath();ctx.arc(hx,hy,4,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#cfe6ff";ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(hx,hy,4,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle="rgba(207,230,255,0.85)";
+    ctx.font="bold 10px monospace";ctx.textAlign="center";
+    ctx.fillText("INIKI \u00b7 CAT 4",hx,hy+46);
+    ctx.restore();
+  }
+  if(simScn==="hilo60"&&t<1.3){
+    const tt=t/1.3, wd=Math.sin(Math.PI*tt)*(W+80);
+    if(wd>1){
+      const g=ctx.createLinearGradient(W,0,W-wd,0);
+      g.addColorStop(0,"rgba(56,189,248,0.22)");g.addColorStop(0.8,"rgba(56,189,248,0.10)");g.addColorStop(1,"rgba(56,189,248,0)");
+      ctx.fillStyle=g;ctx.fillRect(W-wd,0,wd,H);
+      ctx.strokeStyle="rgba(125,211,252,0.5)";ctx.lineWidth=2.5;
+      ctx.beginPath();ctx.moveTo(W-wd,0);ctx.lineTo(W-wd,H);ctx.stroke();
+    }
+    if(tt<0.6){
+      ctx.fillStyle="rgba(125,211,252,0.85)";ctx.font="bold 10px monospace";ctx.textAlign="right";
+      ctx.fillText("\u3030 TSUNAMI \u2014 15 hours from Chile \u00b7 Hilo Bay focuses the wave",W-8,H-12);
+    }
+  }
+  if(simScn==="covid20"&&covidV.length){
+    const show=Math.ceil(covidV.length*Math.max(0.2,1-simMonthF/14));
+    for(let i=0;i<show;i++){
+      const v=covidV[i];
+      v.x+=v.vx;v.y+=v.vy+Math.sin(tNow*0.6+v.ph)*0.12;
+      if(v.x<-15)v.x=W+15;if(v.x>W+15)v.x=-15;
+      if(v.y<-15)v.y=H+15;if(v.y>H+15)v.y=-15;
+      const a=0.10+0.08*Math.sin(tNow*1.2+v.ph);
+      ctx.save();ctx.translate(v.x,v.y);ctx.globalAlpha=Math.max(0.05,a);
+      ctx.strokeStyle="#84cc16";ctx.fillStyle="#84cc1633";ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.arc(0,0,v.r,0,Math.PI*2);ctx.fill();ctx.stroke();
+      for(let s=0;s<8;s++){
+        const an=s*Math.PI/4+v.ph;
+        const sx2=Math.cos(an),sy2=Math.sin(an);
+        ctx.beginPath();ctx.moveTo(sx2*v.r,sy2*v.r);ctx.lineTo(sx2*(v.r+4),sy2*(v.r+4));ctx.stroke();
+        ctx.beginPath();ctx.arc(sx2*(v.r+5),sy2*(v.r+5),1.2,0,Math.PI*2);ctx.fillStyle="#84cc16";ctx.fill();ctx.fillStyle="#84cc1633";
+      }
+      ctx.restore();
+    }
+    ctx.globalAlpha=1;
+  }
+}
+function drawEconPanels(){
+  const E=simScn?ECON[simScn]:null;
+  const sF=(E&&simArmed)?econFactor(E.s,simMonthF):1, dF=(E&&simArmed)?econFactor(E.d,simMonthF):1;
+  const ms=0.85, md=E&&E.steepD?E.steepD:0.85, bs=0.18;
+  const bd=E&&E.steepD?0.7+E.steepD*0.588:1.18;
+  const shS=-(1-sF)*0.55, shD=-(1-dF)*0.55;
+  const Q1=(bd-bs+ms*shS+md*shD)/(ms+md), P1=bs+ms*(Q1-shS);
+  const Q0=(bd-bs)/(ms+md), P0=bs+ms*Q0;
+  const px=392,py=4,pw=238,ph=206;
+  const gx=px+34,gy=py+26,gw=pw-50,gh=ph-62;
+  const X=q=>gx+q*gw, Y=p=>gy+gh-((p-0.1)/1.1)*gh;
+  ctx.save();
+  ctx.fillStyle="rgba(7,8,13,0.92)";ctx.strokeStyle="#1e2535";ctx.lineWidth=1;
+  ctx.fillRect(px,py,pw,ph);ctx.strokeRect(px,py,pw,ph);
+  ctx.textAlign="left";ctx.fillStyle="#8a93a8";ctx.font="bold 9px monospace";
+  if(E){
+    ctx.fillText("SUPPLY \u00d7 DEMAND \u2014 stylized",px+10,py+14);
+    ctx.strokeStyle="#2a3248";ctx.beginPath();ctx.moveTo(gx,gy);ctx.lineTo(gx,gy+gh);ctx.lineTo(gx+gw,gy+gh);ctx.stroke();
+    const seg=(q0,q1,f)=>{ctx.beginPath();ctx.moveTo(X(q0),Y(f(q0)));ctx.lineTo(X(q1),Y(f(q1)));ctx.stroke();};
+    ctx.save();ctx.beginPath();ctx.rect(gx,gy-2,gw+6,gh+6);ctx.clip();
+    ctx.setLineDash([3,3]);ctx.lineWidth=1;
+    ctx.strokeStyle="rgba(56,189,248,0.25)";seg(0.02,1,q=>bs+ms*q);
+    ctx.strokeStyle="rgba(251,113,133,0.25)";seg(0.02,1,q=>bd-md*q);
+    ctx.setLineDash([]);ctx.lineWidth=2;
+    ctx.strokeStyle="#38bdf8";seg(0.02,1,q=>bs+ms*(q-shS));
+    ctx.strokeStyle="#fb7185";seg(0.02,1,q=>bd-md*(q-shD));
+    ctx.restore();
+    ctx.font="bold 11px monospace";ctx.textAlign="center";
+    const qS=Math.max(0.08,Math.min(0.92,(1.02-bs)/ms+shS));
+    const qD=Math.max(0.08,Math.min(0.92,(bd-0.26)/md+shD));
+    ctx.fillStyle="#38bdf8";ctx.fillText("S",X(qS)+11,Y(bs+ms*(qS-shS))+11);
+    ctx.fillStyle="#fb7185";ctx.fillText("D",X(qD)+12,Y(bd-md*(qD-shD))-7);
+    eqTrail.push([Q1,P1]);if(eqTrail.length>150)eqTrail.shift();
+    for(let i=0;i<eqTrail.length;i++){
+      ctx.fillStyle="rgba(232,220,200,"+((i/eqTrail.length)*0.35).toFixed(3)+")";
+      ctx.beginPath();ctx.arc(X(eqTrail[i][0]),Y(eqTrail[i][1]),1.4,0,Math.PI*2);ctx.fill();
+    }
+    ctx.setLineDash([2,3]);ctx.strokeStyle="rgba(232,220,200,0.35)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(X(Q1),Y(P1));ctx.lineTo(gx,Y(P1));ctx.moveTo(X(Q1),Y(P1));ctx.lineTo(X(Q1),gy+gh);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="#e8dcc8";ctx.beginPath();ctx.arc(X(Q1),Y(P1),3.5,0,Math.PI*2);ctx.fill();
+    const dP=(P1-P0)/P0*100,dQ=(Q1-Q0)/Q0*100;
+    ctx.font="bold 9px monospace";ctx.textAlign="left";
+    ctx.fillStyle=dP>0.5?"#f87171":(dP<-0.5?"#4ade80":"#8a93a8");
+    ctx.fillText("P "+(dP>=0?"+":"")+dP.toFixed(0)+"%",px+10,py+ph-20);
+    ctx.fillStyle=dQ<-0.5?"#f87171":(dQ>0.5?"#4ade80":"#8a93a8");
+    ctx.fillText("Q "+(dQ>=0?"+":"")+dQ.toFixed(0)+"%",px+62,py+ph-20);
+    ctx.fillStyle="#7a8099";ctx.font="8px Georgia";
+    const words=E.note.split(" ");let line="";const lines=[];
+    words.forEach(w=>{if((line+w).length>46){lines.push(line);line=w+" ";}else line+=w+" ";});
+    lines.push(line);
+    ctx.fillText(lines[0].trim(),px+10,py+ph-9);
+  } else {
+    ctx.fillText("THE FARTHEST MARKET \u00b7 HAWAI\u02bbI",px+10,py+14);
+    ctx.strokeStyle="#2a3248";ctx.beginPath();ctx.moveTo(gx,gy);ctx.lineTo(gx,gy+gh);ctx.lineTo(gx+gw,gy+gh);ctx.stroke();
+    const yr=FISCAL_YEARS[yearIdx];
+    const sup=nodeVol.kapolei||0;
+    const dem=statewideTotal(yr);
+    const qM=Math.max(sup,dem,1)*1.18;
+    const xS=gx+(sup/qM)*gw, xD=gx+(dem/qM)*gw;
+    ctx.lineWidth=2;
+    ctx.strokeStyle="#38bdf8";ctx.beginPath();ctx.moveTo(xS-5,gy+gh-4);ctx.lineTo(xS+5,gy+8);ctx.stroke();
+    ctx.strokeStyle="#fb7185";ctx.beginPath();ctx.moveTo(xD+5,gy+gh-4);ctx.lineTo(xD-5,gy+8);ctx.stroke();
+    ctx.font="bold 11px monospace";ctx.textAlign="center";
+    ctx.fillStyle="#38bdf8";ctx.fillText("S",xS-12,gy+18);
+    ctx.fillStyle="#fb7185";ctx.fillText("D",xD+12,gy+18);
+    const gp=HI_GAS_PRICE[yearIdx], pY=gy+gh-(gp/5.8)*gh;
+    ctx.setLineDash([2,3]);ctx.strokeStyle="rgba(232,220,200,0.4)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(gx,pY);ctx.lineTo(gx+gw,pY);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="#e8dcc8";ctx.font="8px monospace";ctx.textAlign="left";
+    ctx.fillText("HI gas $"+gp.toFixed(2),gx+2,pY-3);
+    const lo=Math.min(xS,xD),hi=Math.max(xS,xD),gapY=gy+gh-20;
+    if(hi-lo>14){ctx.setLineDash([2,3]);ctx.strokeStyle="rgba(224,150,42,0.45)";
+      ctx.beginPath();ctx.moveTo(lo+7,gapY);ctx.lineTo(hi-7,gapY);ctx.stroke();ctx.setLineDash([]);}
+    ctx.fillStyle="rgba(224,150,42,0.85)";ctx.font="8px Georgia";ctx.textAlign="center";
+    ctx.fillText("the gap arrives finished, by tanker",(lo+hi)/2,gapY-4);
+    ctx.fillStyle="#e8dcc8";ctx.font="bold 9px monospace";ctx.textAlign="left";
+    ctx.fillText("S "+Math.round(sup)+"M \u00b7 D "+Math.round(dem)+"M gal/yr",px+10,py+ph-20);
+    ctx.fillStyle="#7a8099";ctx.font="8px Georgia";
+    ctx.fillText("A precarious 85% \u2014 every point of it from one plant.",px+10,py+ph-9);
+  }
+  ctx.restore();
+  {
+    const px2=638,py2=4,pw2=238,ph2=212;
+    const gx2=px2+36,gy2=py2+24,gw2=pw2-52,gh2=ph2-56;
+    let qMax2=0;for(let i=0;i<26;i++)qMax2=Math.max(qMax2,ECON_PATH[i].d,ECON_PATH[i].s);qMax2*=1.1;
+    const X2=q=>gx2+(q/qMax2)*gw2, Y2=p=>gy2+gh2-(p/5.8)*gh2;
+    ctx.save();
+    ctx.fillStyle="rgba(7,8,13,0.92)";ctx.strokeStyle="#1e2535";ctx.lineWidth=1;
+    ctx.fillRect(px2,py2,pw2,ph2);ctx.strokeRect(px2,py2,pw2,ph2);
+    ctx.fillStyle="#8a93a8";ctx.font="bold 9px monospace";ctx.textAlign="left";
+    ctx.fillText("REAL MARKET PATH \u00b7 FY2000\u201325",px2+10,py2+14);
+    ctx.strokeStyle="#2a3248";ctx.beginPath();ctx.moveTo(gx2,gy2);ctx.lineTo(gx2,gy2+gh2);ctx.lineTo(gx2+gw2,gy2+gh2);ctx.stroke();
+    ctx.fillStyle="#5a647c";ctx.font="8px monospace";
+    [2,4].forEach(p=>{ctx.textAlign="right";ctx.fillText("$"+p,gx2-3,Y2(p)+3);});
+    ctx.save();ctx.translate(gx2-26,gy2+gh2/2);ctx.rotate(-Math.PI/2);ctx.textAlign="center";ctx.fillText("GAS $",0,0);ctx.restore();
+    [["s","#38bdf8"],["d","#fb7185"]].forEach(pair=>{
+      const key=pair[0],col=pair[1];
+      ctx.strokeStyle=col+"55";ctx.lineWidth=1;ctx.beginPath();
+      for(let i=0;i<26;i++){const x=X2(ECON_PATH[i][key]),y=Y2(HI_GAS_PRICE[i]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);}
+      ctx.stroke();
+      for(let i=0;i<26;i++){
+        ctx.fillStyle=col+(i===yearIdx?"ff":"77");
+        ctx.beginPath();ctx.arc(X2(ECON_PATH[i][key]),Y2(HI_GAS_PRICE[i]),i===yearIdx?3.5:1.5,0,Math.PI*2);ctx.fill();
+      }
+      ctx.strokeStyle=col;ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.arc(X2(ECON_PATH[yearIdx][key]),Y2(HI_GAS_PRICE[yearIdx]),6,0,Math.PI*2);ctx.stroke();
+    });
+    ctx.font="bold 11px monospace";ctx.textAlign="center";
+    ctx.fillStyle="#38bdf8";ctx.fillText("S",X2(ECON_PATH[yearIdx].s),gy2+14);
+    ctx.fillStyle="#fb7185";ctx.fillText("D",X2(ECON_PATH[yearIdx].d),gy2+14);
+    const sx=X2(ECON_PATH[yearIdx].s),dx=X2(ECON_PATH[yearIdx].d),gapY=gy2+gh2-14;
+    if(dx-sx>16){ctx.setLineDash([2,3]);ctx.strokeStyle="rgba(224,150,42,0.45)";ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(sx+7,gapY);ctx.lineTo(dx-7,gapY);ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle="rgba(224,150,42,0.85)";ctx.font="8px Georgia";
+      ctx.fillText("\u2190 imported \u2192",(sx+dx)/2,gapY-3);}
+    ctx.fillStyle="#e8dcc8";ctx.font="bold 9px monospace";ctx.textAlign="left";
+    ctx.fillText("FY"+FISCAL_YEARS[yearIdx]+" \u00b7 $"+HI_GAS_PRICE[yearIdx].toFixed(2),px2+10,py2+ph2-20);
+    ctx.fillStyle="#7a8099";ctx.font="8px Georgia";
+    ctx.fillText("S never reaches D \u2014 the rest arrives finished.",px2+10,py2+ph2-9);
+    ctx.restore();
+  }
+}
+
+// ═══════════════════ GEOTHERMAL LENS (bespoke — Hawaiʻi Island / Puna) ═══════════════════
+// Ported shape from the family geo lens (sw_solar142); rendered through HI idioms:
+// tNow-driven heat-arrows (geoPhase, slow-on-pause), single PGV plant, per-island bubbles.
+const GEO_COL="#ef6a52", GEO_HOT="#c2410c", GEO_LOOP="#5ec8d8";
+// generation GWh/yr 2000-2025 — PGV (38 MW) on Kīlauea's East Rift. 30 MW era → 38 MW (2012);
+// May 2018 Kīlauea eruption shut it down (lava overran KS-5/KS-6); resumed Nov 2020, ramped back.
+// EIA/HELCO/Ormat-anchored magnitudes (~29% of Big Island, 2017); inter-year modeled.
+const GEO_HI_BIG=[235,235,235,235,235,235,235,235,235,235,235,235,300,300,300,300,300,300,100,0,15,150,200,205,290,300,300];
+const GEO_DEM_BIG=1035;     // Big Island annual generation (GWh) — sets the share denominator (300/1035≈29%, 2017)
+const GEO_DEM_STATE=9800;   // statewide generation (GWh) — PGV is ~3% of the whole state
+const GEO_GEN_MAX=320;      // bubble sizing ceiling
+const geoYi=()=>Math.min(25,Math.max(0,yearIdx));
+function drawGeoBase(x,y,w){
+  ctx.save();
+  ctx.fillStyle="rgba(110,42,22,0.55)";ctx.fillRect(x-w/2,y,w,15);
+  ctx.fillStyle="rgba(194,65,12,0.60)";ctx.fillRect(x-w/2,y,w,5);
+  ctx.strokeStyle="#e8855a";ctx.lineWidth=1.3;
+  ctx.beginPath();ctx.moveTo(x-w/2,y);ctx.lineTo(x+w/2,y);ctx.stroke();
+  const period=30;ctx.lineWidth=1.5;ctx.lineCap="round";ctx.lineJoin="round";
+  for(let c=-1;c<=1;c++){const ax=x+c*(w*0.3);
+    for(let k=0;k<2;k++){
+      const ph=((geoPhase*0.26 + k*period/2 + (c+1)*4) % period);
+      const ay=y+13-ph, a=Math.min(1,ph/4)*(1-ph/period)*0.9;
+      ctx.strokeStyle="rgba(251,146,60,"+a.toFixed(3)+")";
+      ctx.beginPath();
+      ctx.moveTo(ax,ay+4);ctx.lineTo(ax,ay-3.5);
+      ctx.moveTo(ax-2.6,ay-0.6);ctx.lineTo(ax,ay-4);ctx.lineTo(ax+2.6,ay-0.6);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+// PGV — two air-cooled units + closed reinjection loop (combined flash + binary)
+function drawGeoBinary(x,y){
+  drawGeoBase(x,y,54);
+  ctx.save();
+  ctx.fillStyle="#1b2436";ctx.strokeStyle=GEO_COL;ctx.lineWidth=1.8;
+  ctx.fillRect(x-23,y-16,21,16);ctx.strokeRect(x-23,y-16,21,16);
+  ctx.fillRect(x+2,y-16,21,16);ctx.strokeRect(x+2,y-16,21,16);
+  ctx.strokeStyle="rgba(239,106,82,0.50)";ctx.lineWidth=0.7;
+  for(let r=0;r<3;r++){const fy=y-13+r*4.2;
+    ctx.beginPath();ctx.moveTo(x-19,fy);ctx.lineTo(x-6,fy);ctx.moveTo(x+6,fy);ctx.lineTo(x+19,fy);ctx.stroke();}
+  ctx.strokeStyle=GEO_LOOP;ctx.lineWidth=2;ctx.lineCap="round";
+  ctx.beginPath();ctx.moveTo(x-12,y-16);ctx.bezierCurveTo(x-12,y-33,x+13,y-33,x+12,y-17);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x+9,y-20.5);ctx.lineTo(x+12,y-16.5);ctx.lineTo(x+15.5,y-21);ctx.stroke();
+  ctx.restore();
+}
+const GEO_BUB=[
+  {key:"kauai", x:212,y:600,gen:null,label:"KAUA\u02bbI"},
+  {key:"oahu",  x:416,y:600,gen:null,label:"O\u02bbAHU"},
+  {key:"maui",  x:620,y:600,gen:null,label:"MAUI"},
+  {key:"hawaii",x:824,y:600,gen:GEO_HI_BIG,dem:GEO_DEM_BIG,label:"HAWAI\u02bbI IS.",col:"#ef5a4c"}
+];
+function drawGeoBubbles(){
+  const yi=geoYi();ctx.textAlign="center";
+  GEO_BUB.forEach(d=>{
+    if(d.gen===null){
+      ctx.setLineDash([4,4]);ctx.strokeStyle="#8a6a5a";ctx.lineWidth=1.7;
+      ctx.beginPath();ctx.arc(d.x,d.y,15,0,6.3);ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle="#8a6a5a";ctx.font="bold 13px monospace";ctx.fillText("0",d.x,d.y+4.5);
+    } else {
+      const v=d.gen[yi], r=12+Math.sqrt(Math.max(0,v)/GEO_GEN_MAX)*40;
+      if(v<=0){
+        ctx.setLineDash([4,4]);ctx.strokeStyle="#c2410c";ctx.lineWidth=1.7;
+        ctx.beginPath();ctx.arc(d.x,d.y,15,0,6.3);ctx.stroke();ctx.setLineDash([]);
+        ctx.fillStyle="#c2410c";ctx.font="bold 13px monospace";ctx.fillText("0",d.x,d.y+4.5);
+      } else {
+        const g=ctx.createRadialGradient(d.x,d.y,0,d.x,d.y,r);
+        g.addColorStop(0,d.col+"dd");g.addColorStop(1,d.col+"22");
+        ctx.fillStyle=g;ctx.beginPath();ctx.arc(d.x,d.y,r,0,6.3);ctx.fill();
+        ctx.strokeStyle=d.col;ctx.lineWidth=1.5;ctx.stroke();
+      }
+    }
+    const cy=d.y+58;
+    ctx.fillStyle="#f0a98f";ctx.font="bold 12px Georgia";ctx.fillText(d.label,d.x,cy);
+    if(d.gen===null){
+      ctx.fillStyle="#b98a72";ctx.font="italic 10.5px Georgia";ctx.fillText("no geothermal",d.x,cy+15);
+    } else {
+      const v=d.gen[yi];
+      if(v<=0){
+        ctx.fillStyle="#f0a98f";ctx.font="bold 12px monospace";ctx.fillText("OFFLINE",d.x,cy+16);
+        ctx.fillStyle="#cf8a6a";ctx.font="italic 10px Georgia";ctx.fillText("K\u012blauea 2018",d.x,cy+30);
+      } else {
+        ctx.fillStyle="#e7d6a8";ctx.font="bold 13px monospace";ctx.fillText(Math.round(v)+" GWh",d.x,cy+16);
+        ctx.fillStyle="#cf8a6a";ctx.font="italic 10px Georgia";ctx.fillText("\u2248 "+(v/d.dem*100).toFixed(0)+"% of Big I. power",d.x,cy+30);
+      }
+    }
+  });
+  ctx.textAlign="left";
+}
+let geoWin=0, geoTabRects=null;
+function drawGeoPanel(){
+  const wx=866,wy=14,ww=266,wh=258;
+  ctx.fillStyle="rgba(14,7,4,0.93)";ctx.fillRect(wx,wy,ww,wh);
+  ctx.strokeStyle="#6b3526";ctx.lineWidth=1;ctx.strokeRect(wx,wy,ww,wh);
+  const tabs=["FIRM FLOOR","DAILY","GAUGE"], tw=ww/3, th=24;geoTabRects=[];
+  tabs.forEach((t,i)=>{
+    const tx=wx+i*tw, on=(geoWin===i);
+    ctx.fillStyle=on?"rgba(239,106,82,0.22)":"rgba(36,18,11,0.7)";ctx.fillRect(tx,wy,tw,th);
+    ctx.strokeStyle="#6b3526";ctx.lineWidth=0.8;ctx.strokeRect(tx,wy,tw,th);
+    ctx.fillStyle=on?"#f0a98f":"#9a6a52";ctx.font=(on?"bold ":"")+"10.5px monospace";ctx.textAlign="center";
+    ctx.fillText(t,tx+tw/2,wy+16);
+    geoTabRects.push({x:tx,y:wy,w:tw,h:th,win:i});
+  });
+  const cx=wx+12, cy=wy+th+8, cw=ww-24, ch=wh-th-18;
+  if(geoWin===0) geoPanelFloor(cx,cy,cw,ch);
+  else if(geoWin===1) geoPanelDaily(cx,cy,cw,ch);
+  else geoPanelGauge(cx,cy,cw,ch);
+  ctx.textAlign="left";
+}
+function geoPanelFloor(cx,cy,cw,ch){
+  const yi=geoYi(), gen=GEO_HI_BIG[yi];
+  ctx.textAlign="left";ctx.fillStyle="#f0a98f";ctx.font="bold 12px monospace";ctx.fillText("FIRM FLOOR \u00b7 FY"+(2000+yi),cx,cy+11);
+  ctx.fillStyle="#b98a72";ctx.font="italic 10px Georgia";ctx.fillText("one plant against the Big Island grid",cx,cy+25);
+  const py=cy+38, ph=ch-78, base=py+ph;
+  ctx.strokeStyle="#5a3a2a";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx,base);ctx.lineTo(cx+cw,base);ctx.stroke();
+  const colW=64, bx=cx+cw/2-colW/2;
+  const bH=ph, fH=Math.max(2,(gen/GEO_DEM_BIG)*ph);
+  ctx.fillStyle="rgba(91,107,134,0.26)";ctx.fillRect(bx,base-bH,colW,bH);
+  ctx.strokeStyle="rgba(143,163,196,0.7)";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(bx,base-bH);ctx.lineTo(bx+colW,base-bH);ctx.stroke();
+  if(gen>0){
+    ctx.fillStyle="#ef5a4c";ctx.fillRect(bx,base-fH,colW,fH);
+    ctx.strokeStyle="#c2410c";ctx.lineWidth=1;ctx.strokeRect(bx,base-fH,colW,fH);
+  }
+  ctx.textAlign="center";ctx.fillStyle="#e7d6c8";ctx.font="bold 11px monospace";ctx.fillText("BIG ISLAND",bx+colW/2,base+14);
+  ctx.fillStyle="#aebfcc";ctx.font="9px monospace";ctx.fillText("grid \u2248 1,035 GWh",bx+colW/2,base+26);
+  if(gen>0){
+    ctx.fillStyle="#cf8a6a";ctx.font="bold 12px monospace";ctx.fillText((gen/GEO_DEM_BIG*100).toFixed(0)+"%",bx+colW/2,base-fH-6);
+  } else {
+    ctx.fillStyle="#f0a98f";ctx.font="italic 10px Georgia";ctx.fillText("offline \u2014 K\u012blauea '18",bx+colW/2,base-10);
+  }
+  ctx.textAlign="left";ctx.fillStyle="#5ec8d8";ctx.font="italic 9.5px Georgia";
+  ctx.fillText("\u2248 "+(gen/GEO_DEM_STATE*100).toFixed(0)+"% of the whole state \u2014 one plant, one island",cx,base+44);
+  ctx.fillStyle="#b98a72";ctx.fillText("ember = PGV \u00b7 bar = Big Island generation",cx,base+58);
+}
+function geoPanelDaily(cx,cy,cw,ch){
+  ctx.textAlign="left";ctx.fillStyle="#f0a98f";ctx.font="bold 12px monospace";ctx.fillText("THE ANTI-DUCK",cx,cy+11);
+  ctx.fillStyle="#b98a72";ctx.font="italic 10px Georgia";ctx.fillText("demand rises & falls \u2014 the floor doesn't",cx,cy+25);
+  const py=cy+34, ph=ch-50, base=py+ph;
+  ctx.strokeStyle="rgba(143,163,196,0.85)";ctx.lineWidth=1.7;ctx.beginPath();
+  for(let i=0;i<=48;i++){const t=i/48,xx=cx+t*cw;
+    let dv=0.40+0.30*Math.sin(t*Math.PI)+0.17*Math.exp(-Math.pow((t-0.80)/0.10,2))+0.015*Math.sin(tNow*1.8);
+    dv=Math.max(0.08,Math.min(1,dv));const yy=base-dv*ph;
+    i?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy);}
+  ctx.stroke();
+  ctx.textAlign="right";ctx.fillStyle="#aebfcc";ctx.font="italic 10px Georgia";ctx.fillText("demand \u2191\u2193",cx+cw,py+9);
+  const fF=0.17*ph, floorY=base-fF;
+  ctx.fillStyle="rgba(239,106,82,0.24)";ctx.fillRect(cx,floorY,cw,fF);
+  ctx.strokeStyle="#ef6a52";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx,floorY);ctx.lineTo(cx+cw,floorY);ctx.stroke();
+  ctx.textAlign="left";ctx.fillStyle="#f0a98f";ctx.font="italic 10px Georgia";ctx.fillText("geothermal \u2014 flat, always on",cx+4,floorY-4);
+}
+function geoPanelGauge(cx,cy,cw,ch){
+  ctx.textAlign="left";ctx.fillStyle="#f0a98f";ctx.font="bold 12px monospace";ctx.fillText("CAPACITY FACTOR",cx,cy+11);
+  ctx.fillStyle="#b98a72";ctx.font="italic 10px Georgia";ctx.fillText("share of the year actually generating (EIA '25)",cx,cy+25);
+  const rows=[["geothermal",65,"#ef6a52"],["hydro",38,"#38bdf8"],["wind",34,"#22d3ee"],["solar",24,"#fbbf24"]];
+  const ry0=cy+36, rh=(ch-50)/rows.length, barX=cx+72, barW=cw-104;
+  rows.forEach((r,i)=>{
+    const yy=ry0+i*rh, geo=(r[0]==="geothermal");
+    ctx.textAlign="right";ctx.fillStyle=geo?"#f0a98f":"#a99588";ctx.font=(geo?"bold ":"")+"11px monospace";ctx.fillText(r[0],barX-6,yy+rh*0.62);
+    ctx.fillStyle="rgba(255,255,255,0.06)";ctx.fillRect(barX,yy+2,barW,rh-7);
+    ctx.fillStyle=r[2];ctx.globalAlpha=geo?1:0.65;ctx.fillRect(barX,yy+2,barW*r[1]/100,rh-7);ctx.globalAlpha=1;
+    ctx.textAlign="left";ctx.fillStyle=geo?"#fff":"#cbb5a8";ctx.font=(geo?"bold ":"")+"10px monospace";ctx.fillText(r[1]+"%",barX+barW*r[1]/100+5,yy+rh*0.62);
+  });
+  ctx.textAlign="left";ctx.fillStyle="#cf8a6a";ctx.font="italic 9.5px Georgia";ctx.fillText("national EIA '25 \u2014 the firm renewable, weather-blind",cx,cy+ch-2);
+}
+function drawGeoLayer(){
+  ctx.textAlign="left";
+  ctx.fillStyle="#ef8a72";ctx.font="bold 17px Georgia";
+  ctx.fillText("GEOTHERMAL \u00b7 THE ISLAND'S OWN FIRM POWER \u00b7 HAWAI\u02bbI ISLAND",40,46);
+  ctx.fillStyle="#cf8a6a";ctx.font="14px Georgia";
+  ctx.fillText("The most oil-dependent state's one homegrown firm renewable: Puna taps",40,67);
+  ctx.fillText("K\u012blauea's heat for 24/7 power \u2014 displacing ~475,000 barrels of oil a year.",40,84);
+  ctx.fillStyle="#9a6a52";ctx.font="italic 13px Georgia";
+  ctx.fillText("Sited on the active East Rift Zone: in 2018 the volcano that powers it overran it. Placement approximate.",40,102);
+  // Kīlauea rift-zone hint under the Big Island
+  ctx.save();
+  ctx.strokeStyle="rgba(239,106,82,0.30)";ctx.setLineDash([5,5]);ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(978,548);ctx.quadraticCurveTo(1010,572,1030,604);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle="rgba(185,138,114,0.9)";ctx.font="italic 10px Georgia";ctx.textAlign="left";
+  ctx.fillText("K\u012blauea East Rift Zone",1002,632);
+  ctx.restore();
+  // PGV plant (binary) at Puna, SE Big Island
+  const px=1022,py=566;
+  drawGeoBinary(px,py);
+  ctx.textAlign="right";
+  ctx.fillStyle="#f0a98f";ctx.font="bold 12px Georgia";ctx.fillText("Puna (PGV)",px-32,py-1);
+  ctx.fillStyle="#b98a72";ctx.font="italic 10.5px Georgia";ctx.fillText("Ormat \u00b7 38 MW \u00b7 flash + binary",px-32,py+12);
+  ctx.textAlign="left";
+  drawGeoBubbles();
+  drawGeoPanel();
+}
+
+// ---- loop ----
+let last=performance.now();
+function loop(now){
+  const dt=(now-last)/1000; last=now;
+  tNow += dt;
+  geoPhase += playing?1:0.4;
+  if (playing&&!simScn){
+    playAccum += dt;
+    if (playAccum>0.9){ playAccum=0; stepYear(1, true); }
+  }
+  if(simScn&&simPlaying&&!simArmed){
+    simPreroll-=dt;
+    if(simPreroll<=0)armScenario();
+  }
+  if(simScn&&simPlaying&&simArmed){
+    simMonthF=Math.min(12,simMonthF+dt*0.18);
+    const m=Math.floor(simMonthF);
+    if(m!==prevSimMonth){prevSimMonth=m;simMonth=m;updateSimNote();}
+    slider.value=simMonthF;
+    slider.style.setProperty('--fill',(simMonthF/12*100)+'%');
+    buildFrame(FISCAL_YEARS[yearIdx]);
+    if(simMonthF>=12){simPlaying=false;playBtn.innerHTML='&#9654; PLAY';playBtn.classList.remove('playing');}
+  }
+  render();
+  requestAnimationFrame(loop);
+}
+let playAccum=0;
+
+// ---- UI wiring ----
+const slider=document.getElementById('yearSlider');
+const yearChip=document.getElementById('yearChip');
+const playBtn=document.getElementById('playBtn');
+const vulnBtn=document.getElementById('vulnBtn');
+
+function setYear(idx, fromPlay){
+  yearIdx=((idx%FISCAL_YEARS.length)+FISCAL_YEARS.length)%FISCAL_YEARS.length;
+  buildFrame(FISCAL_YEARS[yearIdx]);
+  slider.value=yearIdx;
+  slider.style.setProperty('--fill', (yearIdx/26*100)+'%');
+  // FY2026 is HELD at the last reported year, not measured — say so on the chip.
+  yearChip.firstChild.nodeValue = FISCAL_YEARS[yearIdx] + (yearIdx>LASTREAL_IDX ? ' \u00b7 held' : '');
+  yearChip.title = yearIdx>LASTREAL_IDX ? 'FY2026 holds FY2025 values \u2014 EIA has not reported the year' : '';
+  updatePrice();
+  if (!fromPlay && !playing){ priceMode='monthly'; sweepStart=performance.now(); }
+}
+function stepYear(d, fromPlay){ setYear(yearIdx+d, fromPlay); }
+
+slider.addEventListener('input', e=>{
+  if(simScn){simArmed=true;simPreroll=0;simMonthF=+e.target.value;
+    slider.style.setProperty('--fill',(simMonthF/12*100)+'%');
+    const m=Math.floor(simMonthF);
+    if(m!==prevSimMonth){prevSimMonth=m;simMonth=m;updateSimNote();}
+    buildFrame(FISCAL_YEARS[yearIdx]);return;}
+  stopPlay(); setYear(+e.target.value); });
+const simNoteEl=document.getElementById('sim-note');
+function updateSimNote(){
+  if(!simScn){simNoteEl.style.display='none';return;}
+  const S=SIM_SCN[simScn],m=Math.min(12,Math.floor(simMonthF));
+  simNoteEl.style.display='block';
+  if(!simArmed){simNoteEl.innerHTML='<b>'+S.name+'</b> \u2014 standby\u2026';return;}
+  simNoteEl.innerHTML='<b>'+S.name+' \u00b7 MONTH '+m+'</b> \u2014 '+S.notes[Math.min(m,S.notes.length-1)];
+}
+function setSim(scn){
+  if(simScn===scn){exitSim();return;}
+  simScn=scn;simMonth=0;simMonthF=0;prevSimMonth=0;simPlaying=true;eqTrail=[];
+  simArmed=false;simPreroll=1.8;
+  stopPlay();
+  slider.min=0;slider.max=12;slider.step='any';slider.value=0;
+  slider.style.setProperty('--fill','0%');
+  document.querySelectorAll('.sim-btn').forEach(b=>b.classList.toggle('active-sim',b.dataset.sim===scn));
+  playBtn.innerHTML='&#9632; PAUSE';playBtn.classList.add('playing');
+  updateSimNote();buildFrame(FISCAL_YEARS[yearIdx]);
+}
+function armScenario(){
+  if(simArmed||!simScn)return;
+  simArmed=true;
+  const scn=simScn;
+  if(scn==="kapolei"){explosion(0.85);}
+  if(scn==="iniki92"){windHowl(0.5,9);}
+  if(scn==="hilo60"){warningSiren(100,0.055,2);tsunamiSwoosh(4200,0.5,4,120,600);}
+  if(scn==="kilauea18"){explosion(0.85);quakeRumble(0.6,4.5);}   // PNW helens80 sound
+  if(scn==="maui23"){fireCrackle(200,0.6,9);sirens(1500,0.04,4);}
+  if(scn==="ports02"){tsunamiSwoosh(200,0.25,3,70,220);}
+  if(scn==="covid20"){covidDrone(0.22,12);
+    covidV=Array.from({length:16},()=>({x:Math.random()*W,y:Math.random()*H,
+      vx:(Math.random()-0.5)*0.25,vy:(Math.random()-0.5)*0.2,r:5+Math.random()*5,ph:Math.random()*6.28}));}
+  updateSimNote();
+  buildFrame(FISCAL_YEARS[yearIdx]);
+}
+function exitSim(){
+  simScn=null;simPlaying=false;simShake=0;prevSimMonth=-1;eqTrail=[];simArmed=false;simPreroll=0;covidV=[];
+  slider.min=0;slider.max=25;slider.step=1;slider.value=yearIdx;
+  slider.style.setProperty('--fill',(yearIdx/25*100)+'%');
+  document.querySelectorAll('.sim-btn').forEach(b=>b.classList.remove('active-sim'));
+  playBtn.innerHTML='&#9654; PLAY';playBtn.classList.remove('playing');
+  updateSimNote();buildFrame(FISCAL_YEARS[yearIdx]);
+}
+document.querySelectorAll('.sim-btn').forEach(b=>b.addEventListener('click',()=>setSim(b.dataset.sim)));
+document.getElementById('econ-btn').addEventListener('click',()=>{
+  econShow=!econShow;
+  const b=document.getElementById('econ-btn');
+  b.innerHTML=econShow?'\ud83d\udcc8 CURVES ON':'\ud83d\udcc8 CURVES OFF';
+  b.classList.toggle('off',!econShow);
+});
+function startPlay(){ playing=true; playBtn.innerHTML='&#9632; PAUSE'; playBtn.classList.add('playing'); priceMode='annual'; }
+function stopPlay(){ playing=false; playBtn.innerHTML='&#9654; PLAY'; playBtn.classList.remove('playing'); priceMode='monthly'; sweepStart=performance.now(); }
+playBtn.addEventListener('click', ()=>{
+  if(simScn){
+    simPlaying=!simPlaying;
+    playBtn.innerHTML=simPlaying?'&#9632; PAUSE':'&#9654; PLAY';
+    playBtn.classList.toggle('playing',simPlaying);
+    return;
+  }
+  playing?stopPlay():startPlay(); });
+
+document.getElementById('islandSeg').addEventListener('click', e=>{
+  const b=e.target.closest('button[data-island]'); if(!b) return;
+  activeIsland=b.dataset.island;
+  document.querySelectorAll('#islandSeg .btn').forEach(x=>x.classList.toggle('active', x===b));
+  placePriceWin();
+});
+vulnBtn.addEventListener('click', ()=>{
+  showVuln=!showVuln;
+  vulnBtn.textContent='\u26A1 VULNERABILITY '+(showVuln?'ON':'OFF');
+  vulnBtn.classList.toggle('on', showVuln);
+});
+const geoBtn=document.getElementById('geoBtn');
+geoBtn.addEventListener('click', ()=>{
+  geoView=!geoView;
+  geoBtn.textContent='🌋 GEOTHERMAL '+(geoView?'ON':'OFF');
+  geoBtn.classList.toggle('on', geoView);
+  if(geoView){ zoom=1; panX=0; panY=0; }
+  document.getElementById('priceWin').style.display = geoView ? 'none' : '';
+});
+
+const fsBtn=document.getElementById('fsBtn');
+const wrapEl=document.querySelector('.wrap');
+function inFullscreen(){ return document.fullscreenElement || document.webkitFullscreenElement; }
+fsBtn.addEventListener('click', ()=>{
+  if (!inFullscreen()){
+    (wrapEl.requestFullscreen || wrapEl.webkitRequestFullscreen).call(wrapEl);
+  } else {
+    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+  }
+});
+function onFsChange(){
+  const fs=!!inFullscreen();
+  fsBtn.classList.toggle('on', fs);
+  fsBtn.innerHTML = fs ? '\u26F6 EXIT FULLSCREEN' : '\u26F6 FULLSCREEN';
+  setTimeout(placePriceWin, 60);
+}
+document.addEventListener('fullscreenchange', onFsChange);
+document.addEventListener('webkitfullscreenchange', onFsChange);
+
+// ---- hover / tooltip ----
+const tip=document.getElementById('tooltip');
+function canvasPos(ev){
+  const r=cv.getBoundingClientRect();
+  const lx=(ev.clientX-r.left)*(W/r.width), ly=(ev.clientY-r.top)*(H/r.height);
+  return {x:(lx-panX)/zoom, y:(ly-panY)/zoom, rawX:ev.clientX-r.left, rawY:ev.clientY-r.top};
+}
+function hitNode(mx,my){
+  let best=null,bd=1e9;
+  for (const k in NODES){
+    const n=NODES[k]; const r=nodeR(nodeVol[k]);
+    const ext=nodeExtent(n,r); const hr=Math.max(ext.up,ext.side)+6;
+    const d=Math.hypot(mx-n.x,my-n.y);
+    if (d<hr && d<bd){ bd=d; best=k; }
+  }
+  return best;
+}
+function islandKeyForNode(n){
+  if (n.island==='both') return 'oahu';
+  return ISLAND_OF[n.island]||'oahu';
+}
+function drawPieInto(cnv, mix){
+  const c=cnv.getContext('2d'); const s=cnv.width; const cx=s/2, cy=s/2, rad=s/2-3;
+  c.clearRect(0,0,s,s);
+  let ang=-Math.PI/2;
+  const order=['jetfuel','gasoline','diesel','powerfuel','other'];
+  for (const k of order){
+    const frac=mix[k]||0; if(frac<=0) continue;
+    const a2=ang+frac*Math.PI*2;
+    c.beginPath(); c.moveTo(cx,cy); c.arc(cx,cy,rad,ang,a2); c.closePath();
+    c.fillStyle=FUEL_COLORS[k]; c.fill();
+    ang=a2;
+  }
+  c.beginPath(); c.arc(cx,cy,rad*0.42,0,Math.PI*2); c.fillStyle='#08161f'; c.fill();
+}
+function showTip(key, pos){
+  const n=NODES[key];
+  const v=nodeVol[key];
+  const isDemand=['oahuGround','kauai','molokai','lanai','mauiCo','hawaiiKona','hawaiiHilo'].includes(key);
+  if(simScn){
+    const f=simFactor(key,simMonthF);
+    if(Math.abs(f-1)>=0.01){
+      const surge=f>1, col=surge?"#fbbf24":"#f87171";
+      const blurb=(SIM_BLURBS[simScn]&&SIM_BLURBS[simScn][key])||(surge?"Surging above normal to cover supply lost elsewhere in this scenario.":"Struck in this scenario \u2014 operating below normal while recovery proceeds.");
+      tip.style.borderColor=col;
+      tip.innerHTML='<div class="sc-title" style="color:'+col+'">'+(surge?"\u25b2 ":"\u26a0 ")+n.label+' \u2014 '+Math.round(f*100)+'%</div>'
+        +'<div class="sc-sub">'+SIM_SCN[simScn].name+' \u00b7 month '+Math.min(12,Math.floor(simMonthF))+'</div>'
+        +'<div class="sc-body">'+blurb+'</div>'
+        +'<div class="sc-status">Now: '+Math.round(f*100)+'% of normal \u00b7 '+simRecoveryText(SIM_SCN[simScn].dmg[key]||[1])+'</div>'
+        +'<div class="sc-hint">Scrub the month slider to walk this asset through the year.</div>'
+        +'<div class="sc-note">Simulation \u2014 damage curve illustrative</div>';
+      tip.classList.add('show');
+      const wrap0=document.getElementById('canvas-wrap').getBoundingClientRect();
+      let l0=pos.rawX+16, t0=pos.rawY+10;
+      const tw0=tip.offsetWidth, th0=tip.offsetHeight;
+      if (l0+tw0>wrap0.width-6) l0=pos.rawX-tw0-16;
+      if (t0+th0>wrap0.height-6) t0=wrap0.height-th0-6;
+      if (t0<6) t0=6;
+      tip.style.left=l0+'px'; tip.style.top=t0+'px';
+      return;
+    }
+    tip.style.borderColor="";
+  } else { tip.style.borderColor=""; }
+  let html='<div class="tt-name">'+n.label+'</div>'+
+           '<div class="tt-sub">'+n.role+'</div>'+
+           '<div class="tt-vol">'+Math.round(v).toLocaleString()+' M gal/yr</div>';
+  if (isDemand){
+    const mix=pieForYear(islandKeyForNode(n), FISCAL_YEARS[yearIdx]);
+    let leg='';
+    const order=['jetfuel','gasoline','diesel','powerfuel','other'];
+    for (const k of order){ if((mix[k]||0)>0.005) leg+='<div><i style="background:'+FUEL_COLORS[k]+'"></i>'+FUEL_LABELS[k]+' '+Math.round(mix[k]*100)+'%</div>'; }
+    html+='<div class="tt-row"><canvas id="ttpie" width="78" height="78"></canvas><div class="legend">'+leg+'</div></div>';
+  }
+  const mixList = key==='crudeSPM' ? crudeMix(FISCAL_YEARS[yearIdx]) : key==='prodImport' ? productMix(FISCAL_YEARS[yearIdx]) : null;
+  if (mixList){
+    html+='<div class="or-head">'+(key==='crudeSPM'?'crude origins':'product origins')+' \u00b7 FY'+FISCAL_YEARS[yearIdx]+'</div>';
+    mixList.forEach(cstr=>{
+      const m=cstr.match(/^(.*?)\s+(\d+)%$/);
+      const nm=m?m[1]:cstr, pct=m?+m[2]:0;
+      const vv=v*pct/100;
+      html+='<div class="or-row"><div class="or-name">'+nm+'</div>'+
+        '<div class="or-track"><div class="or-fill" style="width:'+pct+'%"></div></div>'+
+        '<div class="or-val">'+pct+'% \u00b7 '+fmtVol(vv)+'</div></div>';
+    });
+  }
+  if (HI_FACT[key]){
+    html+='<div class="tt-fact">'+HI_FACT[key]+'</div>';
+  }
+  if (showVuln && VULN_DETAIL[key]){
+    const d=VULN_DETAIL[key];
+    html+='<div class="tt-vuln"><b>Vulnerability '+d.score.toFixed(1)+'/5</b><br>'+d.reason+'</div>';
+  }
+  tip.innerHTML=html;
+  tip.classList.add('show');
+  if (isDemand){ drawPieInto(document.getElementById('ttpie'), pieForYear(islandKeyForNode(n), FISCAL_YEARS[yearIdx])); }
+  // position
+  const wrap=document.getElementById('canvas-wrap').getBoundingClientRect();
+  let left=pos.rawX+16, top=pos.rawY+10;
+  const tw=tip.offsetWidth, th=tip.offsetHeight;
+  if (left+tw>wrap.width-6) left=pos.rawX-tw-16;
+  if (top+th>wrap.height-6) top=wrap.height-th-6;
+  if (top<6) top=6;
+  tip.style.left=left+'px'; tip.style.top=top+'px';
+}
+function showFlagTip(pos){
+  tip.innerHTML='<div class="tt-name">The Flag of Hawai\u02bbi</div><div class="tt-sub">flown for a Kingdom, a Republic, a Territory, and a State</div>'+
+    '<div class="tt-fact">The only U.S. state flag bearing the Union Jack \u2014 adopted around 1816 under King Kamehameha I, honoring Hawai\u02bbi\u2019s early British ties, decades before annexation was imagined. The eight stripes are the eight major islands. It has outlasted every government that flew it.</div>';
+  tip.classList.add('show');
+  const wrap=document.getElementById('canvas-wrap').getBoundingClientRect();
+  let left=pos.rawX+16,top=pos.rawY+10,tw=tip.offsetWidth,th=tip.offsetHeight;
+  if(left+tw>wrap.width-6) left=pos.rawX-tw-16; if(top+th>wrap.height-6) top=wrap.height-th-6; if(top<6) top=6;
+  tip.style.left=left+'px'; tip.style.top=top+'px';
+}
+cv.addEventListener('mousemove', ev=>{
+  const p=canvasPos(ev);
+  if(_dragging){ const sc=W/cv.getBoundingClientRect().width; panX+=(ev.clientX-_lastX)*sc; panY+=(ev.clientY-_lastY)*sc; _lastX=ev.clientX; _lastY=ev.clientY; _clampZoom(); return; }
+  if(geoView){
+    if(geoTabRects){for(const t of geoTabRects){if(p.x>=t.x&&p.x<=t.x+t.w&&p.y>=t.y&&p.y<=t.y+t.h){geoWin=t.win;cv.style.cursor='pointer';tip.classList.remove('show');return;}}}
+    cv.style.cursor='default';tip.classList.remove('show');return;
+  }
+  const k=hitNode(p.x,p.y);
+  if (k){ cv.style.cursor='pointer'; showTip(k,p); }
+  else if (p.x>=HIFLAG.x-4&&p.x<=HIFLAG.x+HIFLAG.w+4&&p.y>=HIFLAG.y-4&&p.y<=HIFLAG.y+HIFLAG.h+4){ cv.style.cursor='pointer'; showFlagTip(p); }
+  else { cv.style.cursor='default'; tip.classList.remove('show'); }
+});
+cv.addEventListener('mouseleave', ()=>tip.classList.remove('show'));
+cv.addEventListener('wheel', e=>{ if(geoView) return; if(zoom<=1 && e.deltaY>0) return; e.preventDefault(); const q=_evXY(e); _zoomAt(q[0],q[1], e.deltaY<0?1.12:1/1.12); }, {passive:false});
+cv.addEventListener('mousedown', e=>{ if(zoom>1){ _dragging=true; _lastX=e.clientX; _lastY=e.clientY; cv.style.cursor='grabbing'; e.preventDefault(); } });
+window.addEventListener('mouseup', ()=>{ if(_dragging){ _dragging=false; cv.style.cursor=zoom>1?'grab':'default'; } });
+
+// ============ PRICE WINDOW (Brent) ============
+// Annual averages track real Brent history; monthly points illustrative (smooth + small wave).
+const BRENT_ANN = {2000:28.5,2001:24.4,2002:25.0,2003:28.8,2004:38.3,2005:54.4,2006:65.1,
+  2007:72.4,2008:96.9,2009:61.7,2010:79.5,2011:111.3,2012:111.7,2013:108.6,2014:98.9,
+  2015:52.4,2016:43.7,2017:54.2,2018:71.0,2019:64.3,2020:41.8,2021:70.9,2022:100.8,
+  2023:82.2,2024:80.0,2025:74.0,2026:74.0};
+function brentMonthly(year){
+  const a=BRENT_ANN[year];
+  const prev=BRENT_ANN[year-1]!==undefined?BRENT_ANN[year-1]:a;
+  const next=BRENT_ANN[year+1]!==undefined?BRENT_ANN[year+1]:a;
+  const out=[];
+  for (let m=0;m<12;m++){
+    const t=m/11;
+    // blend toward neighbors across the year + a deterministic seasonal wiggle
+    const drift = a + (next-a)*(t*0.5) - (a-prev)*((1-t)*0.5)*0.4;
+    const wave = Math.sin((year*12+m)*0.9)* (a*0.04);
+    out.push(Math.max(8, drift+wave));
+  }
+  return out;
+}
+const pcv=document.getElementById('priceCanvas');
+const pctx=pcv.getContext('2d');
+const PW=240, PH=96;
+function sizePriceCanvas(){
+  const dpr=window.devicePixelRatio||1;
+  pcv.width=PW*dpr; pcv.height=PH*dpr; pcv.style.width='100%'; pcv.style.aspectRatio=PW+'/'+PH;
+  pctx.setTransform(dpr,0,0,dpr,0,0);
+}
+sizePriceCanvas();
+let priceMode='monthly';     // 'annual' while playing, 'monthly' when paused
+let sweepStart=performance.now();
+let pwHoverM=-1;
+
+const PRICE_ANCHOR = {  // map coords -> placed relative to canvas-wrap
+  all:    {x:700, y:120},
+  oahu:   {x:300, y:120},
+  maui:   {x:620, y:560},
+  hawaii: {x:560, y:120},
+  kauai:  {x:560, y:430}
+};
+function placePriceWin(){
+  const wrap=document.getElementById('canvas-wrap');
+  const wr=wrap.getBoundingClientRect();
+  const pw=document.getElementById('priceWin');
+  const left=Math.max(8, wr.width - pw.offsetWidth - 14);
+  pw.style.left=left+'px'; pw.style.top='4px';
+}
+
+function updatePrice(){
+  const yr=FISCAL_YEARS[yearIdx];
+  const ann=BRENT_ANN[yr];
+  document.getElementById('pwBig').innerHTML='$'+ann.toFixed(0)+'<span class="u"> /bbl</span>';
+  document.getElementById('pwMeta').textContent= (priceMode==='annual'?'annual avg \u00b7 '+yr:'monthly \u00b7 '+yr);
+  document.getElementById('pwFoot').innerHTML = playing?'playing \u2014 annual track'
+    : (pwHoverM>=0? (['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][pwHoverM]) : 'pause \u2014 scrub the 12\u2011month curve');
+}
+function drawPriceChart(){
+  pctx.clearRect(0,0,PW,PH);
+  const padL=4,padR=4,padT=10,padB=14;
+  const x0=padL, x1=PW-padR, y0=padT, y1=PH-padB;
+  if (priceMode==='annual' || playing){
+    // annual sparkline 2000-2025
+    const vals=FISCAL_YEARS.map(y=>BRENT_ANN[y]);
+    const mn=Math.min(...vals), mx=Math.max(...vals);
+    pctx.beginPath();
+    for (let i=0;i<vals.length;i++){
+      const x=x0+(i/(vals.length-1))*(x1-x0);
+      const y=y1-((vals[i]-mn)/(mx-mn))*(y1-y0);
+      i?pctx.lineTo(x,y):pctx.moveTo(x,y);
+    }
+    pctx.strokeStyle='#6b8aa0'; pctx.lineWidth=1.6; pctx.stroke();
+    // amber marker at current year
+    const xi=x0+(yearIdx/(vals.length-1))*(x1-x0);
+    const yi=y1-((vals[yearIdx]-mn)/(mx-mn))*(y1-y0);
+    pctx.strokeStyle='rgba(245,179,1,.4)'; pctx.lineWidth=1;
+    pctx.beginPath(); pctx.moveTo(xi,y0); pctx.lineTo(xi,y1); pctx.stroke();
+    pctx.beginPath(); pctx.arc(xi,yi,3.4,0,Math.PI*2); pctx.fillStyle='#f5b301'; pctx.fill();
+  } else {
+    // 12-month curve; on pause the ball walks the months (family convention), then hover
+    const vals=brentMonthly(FISCAL_YEARS[yearIdx]);
+    const mn=Math.min(...vals)*0.97, mx=Math.max(...vals)*1.03;
+    pctx.beginPath();
+    for (let i=0;i<vals.length;i++){
+      const x=x0+(i/11)*(x1-x0);
+      const y=y1-((vals[i]-mn)/(mx-mn))*(y1-y0);
+      i?pctx.lineTo(x,y):pctx.moveTo(x,y);
+    }
+    pctx.strokeStyle='#f6c34a'; pctx.lineWidth=1.8; pctx.stroke();
+    const sweepT=Math.min(1,(performance.now()-sweepStart)/3600);
+    if (sweepT<1){
+      const P_MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const mi=Math.min(11,Math.floor(sweepT*12));
+      const bx=x0+(mi/11)*(x1-x0);
+      const by=y1-((vals[mi]-mn)/(mx-mn))*(y1-y0);
+      pctx.strokeStyle='rgba(245,179,1,.45)'; pctx.lineWidth=1;
+      pctx.beginPath(); pctx.moveTo(bx,y0); pctx.lineTo(bx,y1); pctx.stroke();
+      pctx.beginPath(); pctx.arc(bx,by,3.4,0,Math.PI*2); pctx.fillStyle='#f5b301'; pctx.fill();
+      document.getElementById('pwBig').innerHTML='$'+vals[mi].toFixed(0)+'<span class="u"> /bbl</span>';
+      document.getElementById('pwMeta').textContent=P_MON[mi]+' \u00b7 monthly \u00b7 '+FISCAL_YEARS[yearIdx];
+    }
+    // hover dot
+    if (sweepT>=1 && pwHoverM>=0){
+      const x=x0+(pwHoverM/11)*(x1-x0);
+      const y=y1-((vals[pwHoverM]-mn)/(mx-mn))*(y1-y0);
+      pctx.strokeStyle='rgba(245,179,1,.45)'; pctx.lineWidth=1;
+      pctx.beginPath(); pctx.moveTo(x,y0); pctx.lineTo(x,y1); pctx.stroke();
+      pctx.beginPath(); pctx.arc(x,y,3.4,0,Math.PI*2); pctx.fillStyle='#f5b301'; pctx.fill();
+      document.getElementById('pwBig').innerHTML='$'+vals[pwHoverM].toFixed(0)+'<span class="u"> /bbl</span>';
+    }
+  }
+}
+pcv.addEventListener('mousemove', ev=>{
+  if (playing) return;
+  const r=pcv.getBoundingClientRect();
+  const x=(ev.clientX-r.left)/r.width;
+  pwHoverM=Math.round(Math.min(1,Math.max(0,(x*PW-4)/(PW-8)))*11);
+  updatePrice();
+});
+pcv.addEventListener('mouseleave', ()=>{ pwHoverM=-1; updatePrice(); });
+
+// price chart loop (separate light raf for sweep/hover)
+function priceLoop(){ drawPriceChart(); requestAnimationFrame(priceLoop); }
+
+// ---- init ----
+setYear(22);
+placePriceWin();
+requestAnimationFrame(loop);
+requestAnimationFrame(priceLoop);
+window.addEventListener('load', placePriceWin);
+</script>
+</body>
+</html>
